@@ -55,5 +55,13 @@ def recognize_speech_from_mic(recognizer, microphone):
 
 r = sr.Recognizer()
 mic = sr.Microphone(device_index=3)
+while(True):
+    response = recognize_speech_from_mic(r, mic)
 
-print(recognize_speech_from_mic(r, mic))
+    if response["success"]:
+        print(response["transcription"])
+
+        if response["transcription"] == "end":
+            break
+    else:
+        print("Unable to transcribe audio")
