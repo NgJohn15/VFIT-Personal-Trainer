@@ -1,8 +1,10 @@
 from kivy.app import App
+from kivy.uix.dropdown import DropDown
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.button import Button
+from kivy.uix.slider import Slider
 
 
 class WelcomePage(GridLayout):
@@ -59,6 +61,7 @@ class MenuPage(GridLayout):
 
 
 def exercise_button_event(self, exercise_name):
+    print(exercise_name)
     vfit_app.screen_manager.current = 'Exercise'
     vfit_app.selected_exercise = exercise_name
 
@@ -81,49 +84,59 @@ class ExercisePage(GridLayout):
 
 
 class ComponentSetupPage(GridLayout):
+    settings_text = "INFO GOES HERE"
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.rows = 3
-
-        content = GridLayout()
-        content.cols = 2
 
         # Buttons
         menu_layout = GridLayout()
         menu_layout.rows = 3
 
         # Video
+        video_row = GridLayout()
+        video_row.cols = 2
+        video_row.add_widget(Label(text="VIDEO"))
+        video_drop = DropDown()
+        video_row.add_widget(video_drop)
         video_button = Button(
             text="VIDEO"
         )
-        menu_layout.add_widget(video_button)
+        menu_layout.add_widget(video_row)
         # Voice
+        voice_row = GridLayout()
+        voice_row.cols = 2
+        voice_row.add_widget(Label(text="VOICE"))
+        voice_drop = DropDown()
+        voice_row.add_widget(voice_drop)
         voice_button = Button(
             text="VOICE",
-            on_press=voice_button_event
+            on_press=self.voice_button_event
         )
-        # voice_button.bind(on_press=voice_button_event)
-        menu_layout.add_widget(voice_button)
+        menu_layout.add_widget(voice_row)
         # Audio
+        audio_row = GridLayout()
+        audio_row.cols = 2
+        audio_row.add_widget(Label(text="AUDIO"))
+        audio_row.add_widget(Slider())
         audio_button = Button(
             text="AUDIO"
         )
-        menu_layout.add_widget(audio_button)
-
-        content.add_widget(menu_layout)
-        content.add_widget(Label(text="INFO GOES HERE"))
+        menu_layout.add_widget(audio_row)
 
         self.add_widget(Label(text="SETTINGS"))
-        self.add_widget(content)
-        self.add_widget(Button(text="READY?", on_press=ready_button_event))
+        self.add_widget(menu_layout)
+        self.add_widget(Button(text="READY?", on_press=self.ready_button_event))
 
+    def build(self):
+        print("WHEN IS THIS CALLED")
 
-def voice_button_event(self):
-    print("voice button clicked")
+    def voice_button_event(self, instance):
+        print("voice button clicked")
+        self.settings_text = "VOICE CHANGED"
 
-
-def ready_button_event(self):
-    vfit_app.screen_manager.current = "Menu"
+    def ready_button_event(self, instance):
+        vfit_app.screen_manager.current = "Menu"
 
 
 class VFITApp(App):
