@@ -16,8 +16,11 @@ def print_text(text, image_name):
 
 def record():
 
+    if not os.path.exists('exercises'):
+        os.makedirs('exercises')
+
     # Saving Exercise name, and starting CV view
-    gesture_file_name = str(
+    gesture_file_name = "exercises/" + str(
         input("Enter the name of the gesture you want to record.\n")) + ".txt"
 
     with open(gesture_file_name, "w") as template_file:
