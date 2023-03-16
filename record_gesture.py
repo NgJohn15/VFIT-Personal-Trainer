@@ -23,6 +23,13 @@ def record():
     gesture_file_name = "exercises/" + str(
         input("Enter the name of the gesture you want to record.\n")) + ".txt"
 
+    file_counter = 1
+    filename, extension = os.path.splitext(gesture_file_name)
+    while os.path.exists(gesture_file_name):
+        gesture_file_name = filename + \
+            str("_{}".format(file_counter)) + extension
+        file_counter += 1
+
     with open(gesture_file_name, "w") as template_file:
         template_file.close()
 
@@ -113,13 +120,12 @@ def record():
                     video_pose.write(image)
 
             else:
-                print("please stand in the center of the frame!")
-                blank_image = np.zeros((640, 360, 3), np.uint8)
+                image = np.zeros((640, 360, 3), np.uint8)
                 # INTER_CUBIC interpolation
-                blank_image = cv2.resize(
-                    blank_image, (1920, 1080), interpolation=cv2.INTER_CUBIC)
+                image = cv2.resize(
+                    image, (1920, 1080), interpolation=cv2.INTER_CUBIC)
                 print_text(
-                    "please stand in the center of the frame!", blank_image)
+                    "please stand in the center of the frame!", image)
 
             new_frame_time = time.time()
             fps = 1/(new_frame_time-prev_frame_time)
