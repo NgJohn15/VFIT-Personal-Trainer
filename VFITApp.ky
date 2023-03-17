@@ -1,0 +1,97 @@
+#:kivy 2.1.0
+WindowManager:
+    WelcomePage:
+    ComponentSetupPage:
+    MenuPage:
+    ExercisePage:
+
+<WelcomePage>:
+    name: 'Welcome'
+    GridLayout:
+        cols: 1
+
+        Button:
+            text: 'Welcome'
+            font_size: '32'
+            on_press: app.root.current = 'Setup'
+
+<ComponentSetupPage>:
+    name: 'Setup'
+    GridLayout:
+        rows: 3
+
+        Label:
+            text: 'SETTINGS'
+
+        GridLayout:
+            rows: 3
+            GridLayout:
+                cols: 2
+                Label:
+                    text: 'VIDEO'
+                DropDown:
+
+            GridLayout:
+                cols: 3
+                Label:
+                    text: 'VOICE'
+                Button:
+                    text: 'VOICE'
+                    on_press: root.voice_button_event()
+                ToggleButton:
+                    text: 'TOGGLE MIC'
+                    on_press: root.test_voice_button()
+
+            GridLayout:
+                cols: 2
+                Label:
+                    text: 'AUDIO'
+                Slider:
+
+        Button:
+            text: 'READY?'
+            on_press: app.root.current = 'Menu'
+
+<MenuPage>
+    name: 'Menu'
+    GridLayout:
+        rows: 3
+
+        Button:
+            text: 'SETTINGS'
+            on_press: app.root.current = 'Setup'
+
+        Label:
+            text: 'Select an exercise to begin'
+
+        GridLayout:
+            cols: 4
+
+            Button:
+                text: 'Exercise 1'
+                on_press: root.change_exercise_name("Exercise 1")
+            Button:
+                text: 'Exercise 2'
+                on_press: root.change_exercise_name("Exercise 2")
+            Button:
+                text: 'Exercise 3'
+                on_press: root.change_exercise_name("Exercise 3")
+            Button:
+                text: 'Exercise 4'
+                on_press: root.change_exercise_name("Exercise 4")
+
+
+<ExercisePage>
+    name: 'Exercise'
+    GridLayout:
+        rows: 2
+
+        Label:
+            text: app.selected_exercise_name
+
+        GridLayout:
+            cols: 2
+            Label:
+                text: 'VIDEO FEED'
+            Label:
+                text: 'REFERENCE'
