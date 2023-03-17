@@ -25,7 +25,7 @@ def recognize_speech_from_mic(recognizer, microphone):
     print("Listening...")
     with microphone as source:
         recognizer.adjust_for_ambient_noise(source)
-        audio = recognizer.listen(source)
+        audio = recognizer.listen(source, 3, 4)
 
     # set up the response object
     response = {
@@ -52,16 +52,31 @@ def recognize_speech_from_mic(recognizer, microphone):
 
     return response
 
+def main():
+    r = sr.Recognizer()
+    print(sr.Microphone.list_microphone_names())
+    mic = sr.Microphone(device_index=3)
+    while(True):
+        response = recognize_speech_from_mic(r, mic)
 
-r = sr.Recognizer()
-mic = sr.Microphone(device_index=3)
-while(True):
-    response = recognize_speech_from_mic(r, mic)
+        if response["success"]:
+            print(response["transcription"])
 
-    if response["success"]:
-        print(response["transcription"])
+            if response["transcription"] == "exit":
+                break
+        else:
+            print("Unable to transcribe audio")
 
-        if response["transcription"] == "end":
-            break
-    else:
-        print("Unable to transcribe audio")
+def runLoop():
+    r = sr.Recognizer()
+    mic = sr.Microphone(device_index=3)
+    while (True):
+        response = recognize_speech_from_mic(r, mic)
+
+        if response["success"]:
+            print(response["transcription"])
+        else:
+            print("Unable to transcribe audio")
+
+if __name__ == "__main__":
+    main()
