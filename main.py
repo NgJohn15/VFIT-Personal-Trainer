@@ -5,7 +5,8 @@ from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.button import Button
 from kivy.uix.slider import Slider
-
+from kivy.uix.togglebutton import ToggleButton
+from voice import runLoop
 
 class WelcomePage(GridLayout):
     # runs on initialization
@@ -34,8 +35,11 @@ class MenuPage(GridLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.rows = 2
-
+        self.rows = 3
+        self.add_widget(Button(
+            text="SETTINGS",
+            on_press=self.settings_button
+        ))
         self.add_widget(Label(text="Select an exercise to be begin"))
 
         # generate Exercise menu
@@ -58,7 +62,8 @@ class MenuPage(GridLayout):
 
         # Add Exercise Menu
         self.add_widget(exercise_layout)
-
+    def settings_button(self, instance):
+        vfit_app.screen_manager.current="Setup"
 
 def exercise_button_event(self, exercise_name):
     print(exercise_name)
@@ -82,7 +87,6 @@ class ExercisePage(GridLayout):
 
         self.add_widget(feed_layout)
 
-
 class ComponentSetupPage(GridLayout):
     settings_text = "INFO GOES HERE"
     def __init__(self, **kwargs):
@@ -105,14 +109,17 @@ class ComponentSetupPage(GridLayout):
         menu_layout.add_widget(video_row)
         # Voice
         voice_row = GridLayout()
-        voice_row.cols = 2
+        voice_row.cols = 3
         voice_row.add_widget(Label(text="VOICE"))
-        voice_drop = DropDown()
-        voice_row.add_widget(voice_drop)
         voice_button = Button(
             text="VOICE",
             on_press=self.voice_button_event
         )
+        voice_row.add_widget(voice_button)
+        voice_row.add_widget(ToggleButton(
+            text="TOGGLE MIC",
+            on_press=self.test_voice_button
+        ))
         menu_layout.add_widget(voice_row)
         # Audio
         audio_row = GridLayout()
@@ -127,9 +134,9 @@ class ComponentSetupPage(GridLayout):
         self.add_widget(Label(text="SETTINGS"))
         self.add_widget(menu_layout)
         self.add_widget(Button(text="READY?", on_press=self.ready_button_event))
-
-    def build(self):
-        print("WHEN IS THIS CALLED")
+    def test_voice_button(self, instance):
+        runLoop()
+        print("TEST VOICE")
 
     def voice_button_event(self, instance):
         print("voice button clicked")
