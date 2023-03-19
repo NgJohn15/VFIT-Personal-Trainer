@@ -99,7 +99,7 @@ def record():
                 print(angles_arr)
 
             else:
-                image = np.zeros((1920, 1080, 3), np.uint8)
+                image = np.zeros((1080, 1920, 3), np.uint8)
                 print_text(
                     "please stand in the center of the frame!", image)
 
