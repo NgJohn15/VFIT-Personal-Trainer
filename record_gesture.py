@@ -14,6 +14,25 @@ def print_text(text, image_name):
     cv2.putText(image_name, text, (textX, textY), font, 2, (0, 255, 0), 1)
 
 
+def get_angle(a, b, c):
+    a = np.array(a)
+    b = np.array(b)
+    c = np.array(c)
+
+    radians = np.arctan2(c[1] - b[1], c[0] - b[0]) - \
+        np.arctan2(a[1] - b[1], a[0] - b[0])
+    angle = np.abs(radians*180.0/np.pi)
+
+    if angle > 180:
+        angle = 360 - angle
+
+    return angle
+
+
+def display_angle():
+    pass
+
+
 def record():
 
     if not os.path.exists('exercises'):
@@ -105,25 +124,31 @@ def record():
                 landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
 
             if results.pose_landmarks != None:
+                video_pose.write(image)
+                
+                # INTER_CUBIC interpolation
+                image = cv2.resize(image, (1920, 1080),
+                                   interpolation=cv2.INTER_CUBIC)
                 # writing pose data to file
                 with open(gesture_file_name, "a") as template_file:
-                    temp_text = []
-                    for data_point in results.pose_landmarks.landmark:
-                        temp_text.append([
-                            data_point.x,
-                            data_point.y,
-                            data_point.z,
-                            data_point.visibility,
-                        ])
-                    template_file.write(str(temp_text) + "\n")
+                    # Drawing angles to image.
+                    joints = results.pose_landmarks.landmark
+                    angles_needed = [[16, 14, 12], [15, 13, 11], [14, 12, 24], [13, 11, 23], [12, 24, 26], 
+                        [11, 23, 25], [24, 26, 28], [23, 25, 27], [26, 28, 32], [25, 27, 31], [20, 16, 14], [19, 15, 13]]
+                    angles_arr = []
+
+                    for joint in angles_needed:
+                        angle = get_angle([joints[joint[0]].x, joints[joint[0]].y], [
+                                          joints[joint[1]].x, joints[joint[1]].y], [joints[joint[2]].x, joints[joint[2]].y])
+                        angles_arr.append(angle)
+                        cv2.putText(image, str(angle), tuple(np.multiply([joints[joint[1]].x, joints[joint[1]].y], [
+                                    1920, 1080]).astype(int)), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+
+                    template_file.write(str(angles_arr) + "\n")
                     template_file.close()
-                    video_pose.write(image)
 
             else:
-                image = np.zeros((640, 360, 3), np.uint8)
-                # INTER_CUBIC interpolation
-                image = cv2.resize(
-                    image, (1920, 1080), interpolation=cv2.INTER_CUBIC)
+                image = np.zeros((1920, 1080, 3), np.uint8)
                 print_text(
                     "please stand in the center of the frame!", image)
 
@@ -137,9 +162,7 @@ def record():
             # converting the fps to string so that we can display it on frame
             # by using putText function
             fps = str(fps)
-            # INTER_CUBIC interpolation
-            image = cv2.resize(image, (1920, 1080),
-                               interpolation=cv2.INTER_CUBIC)
+
             cv2.putText(image, text="FPS: " + fps, org=(0, 30),
                         fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(0, 255, 0), thickness=1)
             cv2.putText(image, text="press q to quit", org=(
