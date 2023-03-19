@@ -96,7 +96,7 @@ def record():
             min_detection_confidence=0.5,
             min_tracking_confidence=0.5) as pose:
 
-        recording_length = 10
+        recording_length = 4
         start_time = time.time()
         end_time = 0
         while cap.isOpened() and (end_time - start_time <= recording_length):
@@ -125,7 +125,7 @@ def record():
 
             if results.pose_landmarks != None:
                 video_pose.write(image)
-                
+
                 # INTER_CUBIC interpolation
                 image = cv2.resize(image, (1920, 1080),
                                    interpolation=cv2.INTER_CUBIC)
@@ -133,8 +133,8 @@ def record():
                 with open(gesture_file_name, "a") as template_file:
                     # Drawing angles to image.
                     joints = results.pose_landmarks.landmark
-                    angles_needed = [[16, 14, 12], [15, 13, 11], [14, 12, 24], [13, 11, 23], [12, 24, 26], 
-                        [11, 23, 25], [24, 26, 28], [23, 25, 27], [26, 28, 32], [25, 27, 31], [20, 16, 14], [19, 15, 13]]
+                    angles_needed = [[16, 14, 12], [15, 13, 11], [14, 12, 24], [13, 11, 23], [12, 24, 26],
+                                     [11, 23, 25], [24, 26, 28], [23, 25, 27], [26, 28, 32], [25, 27, 31], [20, 16, 14], [19, 15, 13]]
                     angles_arr = []
 
                     for joint in angles_needed:
@@ -144,7 +144,8 @@ def record():
                         cv2.putText(image, str(angle), tuple(np.multiply([joints[joint[1]].x, joints[joint[1]].y], [
                                     1920, 1080]).astype(int)), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
 
-                    template_file.write(str(angles_arr) + "\n")
+                    template_file.write(
+                        str(angles_arr)[1:len(str(angles_arr))-1] + "\n")
                     template_file.close()
 
             else:
