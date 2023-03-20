@@ -4,6 +4,8 @@ import numpy as np
 import time
 import keyboard
 import os
+import math
+
 
 
 def print_text(text, image_name):
@@ -25,12 +27,35 @@ def get_angle(a, b, c):
 
     if angle > 180:
         angle = 360 - angle
-
     return angle
 
+def dtw_distance_window(s1, s2, window):
+    n = len(s1)
+    m = len(s2)
+    window = max(window, abs(n-m))   # Adjusting the window size
+    DTW = np.zeros((n+1, m+1))
+    for i in range(1, n+1):
+        DTW[i, 0] = np.inf
+    for i in range(1, m+1):
+        DTW[0, i] = np.inf
+    DTW[0,0] = 0
+    for i in range(1, n+1):
+        for j in range(max(1, i-window), min(m, i+window)+1):
+            cost = np.linalg.norm(s1[i-1]-s2[j-1])
+            DTW[i,j] = cost + min(DTW[i-1,j], DTW[i,j-1], DTW[i-1,j-1])
+    return DTW[n,m]
 
-def display_angle():
-    pass
+def get_exercise_array(filename):
+    with open("exercises/{}".format(filename), "r") as template_file:
+        temp_arr =[]
+        for line in template_file:
+            formatted_line = line.strip()
+            formatted_line = formatted_line.split(",")
+            formatted_line = [float(i) for i in formatted_line]
+            temp_arr.append(formatted_line)
+        template_file.close()
+        #print(temp_arr)
+    return np.array(temp_arr)
 
 
 def record():
@@ -49,6 +74,11 @@ def record():
     cap.set(cv2.CAP_PROP_BUFFERSIZE, 3)
     prev_frame_time = 0
     new_frame_time = 0
+
+    start_time_dtw = time.time()
+    end_time_dtw = 0
+    dtw_array = []
+
     with mp_pose.Pose(
             model_complexity=1,
             min_detection_confidence=0.5,
@@ -95,8 +125,14 @@ def record():
                     angles_arr.append(angle)
                     cv2.putText(image, str(angle), tuple(np.multiply([joints[joint[1]].x, joints[joint[1]].y], [
                                 1920, 1080]).astype(int)), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
-                
-                print(angles_arr)
+                    
+                if (end_time_dtw - start_time_dtw) <= 4:
+                    dtw_array.append(angles_arr)
+                else:
+                    reference_data = get_exercise_array("bicep.txt")
+                    print(dtw_distance_window(reference_data, dtw_array, math.ceil(0.1 * min(len(dtw_array), len(reference_data)))))
+                    dtw_array = []
+                    start_time_dtw = time.time()
 
             else:
                 image = np.zeros((1080, 1920, 3), np.uint8)
@@ -122,6 +158,8 @@ def record():
             cv2.imshow('Inference Window', image)
             if (cv2.waitKey(5) & 0xFF == ord('q')) or (keyboard.is_pressed("q")):
                 break
+
+            end_time_dtw = time.time()
 
 
     cap.release()
