@@ -20,21 +20,26 @@ WindowManager:
     GridLayout:
         rows: 3
 
-        Label:
+        MDLabel:
             text: 'SETTINGS'
+            halign: "center"
 
         GridLayout:
             rows: 3
             GridLayout:
                 cols: 2
-                Label:
+                MDLabel:
                     text: 'VIDEO'
-                DropDown:
+                    halign: "center"
+                Button:
+                    text: 'TEST VIDEO'
+                    on_press: root.test_video_button()
 
             GridLayout:
                 cols: 3
-                Label:
+                MDLabel:
                     text: 'VOICE'
+                    halign: "center"
                 Button:
                     text: 'VOICE'
                     on_press: root.voice_button_event()
@@ -44,9 +49,10 @@ WindowManager:
 
             GridLayout:
                 cols: 2
-                Label:
+                MDLabel:
                     text: 'AUDIO'
-                Slider:
+                    halign: "center"
+                MDSlider:
 
         Button:
             text: 'READY?'
@@ -61,8 +67,9 @@ WindowManager:
             text: 'SETTINGS'
             on_press: app.root.current = 'Setup'
 
-        Label:
+        MDLabel:
             text: 'Select an exercise to begin'
+            halign: "center"
 
         GridLayout:
             cols: 4
@@ -81,17 +88,16 @@ WindowManager:
                 on_press: root.change_exercise_name("Exercise 4")
 
 
-<ExercisePage>
-    name: 'Exercise'
-    GridLayout:
-        rows: 2
-
-        Label:
-            text: app.selected_exercise_name
-
-        GridLayout:
-            cols: 2
-            Label:
-                text: 'VIDEO FEED'
-            Label:
-                text: 'REFERENCE'
+#<ExercisePage>
+#    name: 'Exercise'
+#    GridLayout:
+#        rows: 2
+#
+#        MDLabel:
+#            text: app.selected_exercise_name
+#            halign: "center"
+#        GridLayout:
+#            cols: 2
+#            MDLabel:
+#                text: 'REFERENCE'
+#                halign: "center"
