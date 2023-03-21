@@ -1,194 +1,121 @@
-from kivy.app import App
-from kivy.uix.dropdown import DropDown
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.label import Label
+import cv2
+from kivy.uix.image import Image
+from kivy.lang import Builder
+from kivy.properties import StringProperty
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.uix.button import Button
-from kivy.uix.slider import Slider
-from kivy.uix.togglebutton import ToggleButton
-from voice import runLoop
+from kivy.config import Config
+from kivymd.app import MDApp
+from kivy.clock import Clock
+from kivy.graphics.texture import Texture
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.gridlayout import MDGridLayout
+from kivymd.uix.label import MDLabel
 
-class WelcomePage(GridLayout):
-    # runs on initialization
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+colors = {
+    "Teal": {
+        "200": "#212121",
+        "500": "#212121",
+        "700": "#212121",
+    },
+    "Red": {
+        "200": "#C25554",
+        "500": "#C25554",
+        "700": "#C25554",
+    },
+    "Blue": {
+        "200": "#0021A5",
+        "500": "#0021A5",
+        "700": "#0021A5"
+    },
+    "Orange": {
+        "200": "#FA4616",
+        "500": "#FA4616",
+        "700": "#FA4616"
+    },
+    "Light": {
+        "StatusBar": "E0E0E0",
+        "AppBar": "#202020",
+        "Background": "#2E3032",
+        "CardsDialogs": "#FFFFFF",
+        "FlatButtonDown": "#CCCCCC",
+    },
+}
 
-        # initialize grid size
-        self.cols = 1
-
-        welcome_button = Button(
-            text='Welcome',
-            font_size='32'  # todo: change to dynamically change based on window size
-            # size_hint=(1, 1),
-            # pos_hint={'x': .2, 'y': .2},
-        )
-        welcome_button.bind(on_press=welcome_button_event)
-        self.add_widget(welcome_button)
-
-
-def welcome_button_event(self):
-    vfit_app.screen_manager.current = 'Setup'
-
-
-# Display list of exercises
-class MenuPage(GridLayout):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.rows = 3
-        self.add_widget(Button(
-            text="SETTINGS",
-            on_press=self.settings_button
-        ))
-        self.add_widget(Label(text="Select an exercise to be begin"))
-
-        # generate Exercise menu
-        exercise_layout = GridLayout()
-        exercise_num = 4
-        exercise_layout.cols = exercise_num
-        for i in range(exercise_num):
-            exercise_name = "Exercise " + str(i+1)
-            temp = Button(
-                text=exercise_name,
-                on_press=lambda *args: exercise_button_event(exercise_name, *args))
-
-            # bind button to event
-            # temp.bind(on_press=exercise_button_event(exercise_name))
-            # temp.bind(on_press=lambda *args: self.exercise_button_event(exercise_name, *args))
-
-            # Button(on_press=lambda *args: self.my_function('btn1', *args))
-
-            exercise_layout.add_widget(temp)
-
-        # Add Exercise Menu
-        self.add_widget(exercise_layout)
-    def settings_button(self, instance):
-        vfit_app.screen_manager.current="Setup"
-
-def exercise_button_event(self, exercise_name):
-    print(exercise_name)
-    vfit_app.screen_manager.current = 'Exercise'
-    vfit_app.selected_exercise = exercise_name
+class WelcomePage(Screen):
+    pass
 
 
 # Display list of exercises
-class ExercisePage(GridLayout):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+class MenuPage(Screen):
+    def change_exercise_name(self, exercise_name):
+        print("Changing to", exercise_name)
+        vfit_app.selected_exercise_name = exercise_name
+        vfit_app.root.current = 'Exercise'
 
-        self.rows = 2
-        self.exercise_label = Label(text="selected exercise: " + vfit_app.selected_exercise)  # todo: dynamically update text to selected exercise
-        self.add_widget(self.exercise_label)
+class KivyCamera(Image):
+    def __init__(self, capture, fps, **kwargs):
+        super(KivyCamera, self).__init__(**kwargs)
+        self.capture = capture
+        Clock.schedule_interval(self.update, 1.0 / fps)
 
-        feed_layout = GridLayout()
-        feed_layout.cols = 2
-        feed_layout.add_widget(Label(text='VIDEO FEED'))
-        feed_layout.add_widget(Label(text='REFERENCE'))
+    def update(self, dt):
+        print("updateing")
+        ret, frame = self.capture.read()
+        if ret:
+            # convert it to texture
+            buf1 = cv2.flip(frame, 0)
+            buf = buf1.tostring()
+            image_texture = Texture.create(
+                size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
+            image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
+            # display image from the texture
+            self.texture = image_texture
 
-        self.add_widget(feed_layout)
+# Display list of exercises
+class ExercisePage(Screen):
+    name = 'Exercise'
+    print("EXERCISE")
 
-class ComponentSetupPage(GridLayout):
-    settings_text = "INFO GOES HERE"
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.rows = 3
+    def build(self):
+        layout = MDGridLayout()
+        layout.rows = 2
+        print("building camera")
+        layout.add_widget(MDLabel(text=vfit_app.selected_exercise_name), halign='center')
+        self.capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        self.my_camera = KivyCamera(capture=self.capture, fps=60)
+        layout.add_widget(self.my_camera)
+        return layout
 
-        # Buttons
-        menu_layout = GridLayout()
-        menu_layout.rows = 3
+    def on_stop(self):
+        #without this, app will not exit even if the window is closed
+        self.capture.release()
+class ComponentSetupPage(Screen):
+    pass
+    settings_text = StringProperty("INFO GOES HERE")
 
-        # Video
-        video_row = GridLayout()
-        video_row.cols = 2
-        video_row.add_widget(Label(text="VIDEO"))
-        video_drop = DropDown()
-        video_row.add_widget(video_drop)
-        video_button = Button(
-            text="VIDEO"
-        )
-        menu_layout.add_widget(video_row)
-        # Voice
-        voice_row = GridLayout()
-        voice_row.cols = 3
-        voice_row.add_widget(Label(text="VOICE"))
-        voice_button = Button(
-            text="VOICE",
-            on_press=self.voice_button_event
-        )
-        voice_row.add_widget(voice_button)
-        voice_row.add_widget(ToggleButton(
-            text="TOGGLE MIC",
-            on_press=self.test_voice_button
-        ))
-        menu_layout.add_widget(voice_row)
-        # Audio
-        audio_row = GridLayout()
-        audio_row.cols = 2
-        audio_row.add_widget(Label(text="AUDIO"))
-        audio_row.add_widget(Slider())
-        audio_button = Button(
-            text="AUDIO"
-        )
-        menu_layout.add_widget(audio_row)
-
-        self.add_widget(Label(text="SETTINGS"))
-        self.add_widget(menu_layout)
-        self.add_widget(Button(text="READY?", on_press=self.ready_button_event))
-    def test_voice_button(self, instance):
-        runLoop()
+    def test_voice_button(self):
+        # runLoop()
         print("TEST VOICE")
 
-    def voice_button_event(self, instance):
+    def voice_button_event(self):
         print("voice button clicked")
         self.settings_text = "VOICE CHANGED"
 
-    def ready_button_event(self, instance):
-        vfit_app.screen_manager.current = "Menu"
+    def test_video_button(self):
+        print("test video")
+class WindowManager(ScreenManager):
+    pass
 
 
-class VFITApp(App):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.setup_page = None
-        self.exercise_page = None
-        self.menu_page = None
-        self.welcome_page = None
-        self.screen_manager = None
-        self.selected_exercise = ""
+class VFITApp(MDApp):
+    selected_exercise_name = StringProperty("")
 
     def build(self):
-        # We are going to use screen manager, so we can add multiple screens
-        # and switch between them
-        self.screen_manager = ScreenManager()
-
-        # Initial, connection screen (we use passed in name to activate screen)
-        # First create a page, then a new screen, add page to screen and screen to screen manager
-        self.welcome_page = WelcomePage()
-        screen = Screen(name='Welcome')
-        screen.add_widget(self.welcome_page)
-        self.screen_manager.add_widget(screen)
-
-        # Menu Page
-        self.menu_page = MenuPage()
-        screen = Screen(name='Menu')
-        screen.add_widget(self.menu_page)
-        self.screen_manager.add_widget(screen)
-
-        # Exercise Page
-        self.exercise_page = ExercisePage()
-        screen = Screen(name='Exercise')
-        screen.add_widget(self.exercise_page)
-        self.screen_manager.add_widget(screen)
-
-        # Setup Page
-        self.setup_page = ComponentSetupPage()
-        screen = Screen(name='Setup')
-        screen.add_widget(self.setup_page)
-        self.screen_manager.add_widget(screen)
-
-        return self.screen_manager
+        kv = Builder.load_file("VFITApp.ky")
+        return kv
 
 
 if __name__ == "__main__":
+    Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
     vfit_app = VFITApp()
     vfit_app.run()
