@@ -1,194 +1,260 @@
-from kivy.app import App
-from kivy.uix.dropdown import DropDown
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.label import Label
+import cv2
+from kivy.uix.image import Image
+from kivy.lang import Builder
+from kivy.properties import StringProperty
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.uix.button import Button
-from kivy.uix.slider import Slider
-from kivy.uix.togglebutton import ToggleButton
+from kivy.config import Config
+from kivymd.app import MDApp
+from kivy.clock import Clock
+from kivy.graphics.texture import Texture
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.gridlayout import MDGridLayout
+from kivymd.uix.label import MDLabel
 from voice import runLoop
+import speech_recognition as sr
+from threading import Thread
+   
 
-class WelcomePage(GridLayout):
-    # runs on initialization
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+colors = {
+    "Teal": {
+        "200": "#212121",
+        "500": "#212121",
+        "700": "#212121",
+    },
+    "Red": {
+        "200": "#C25554",
+        "500": "#C25554",
+        "700": "#C25554",
+    },
+    "Blue": {
+        "200": "#0021A5",
+        "500": "#0021A5",
+        "700": "#0021A5"
+    },
+    "Orange": {
+        "200": "#FA4616",
+        "500": "#FA4616",
+        "700": "#FA4616"
+    },
+    "Light": {
+        "StatusBar": "E0E0E0",
+        "AppBar": "#202020",
+        "Background": "#2E3032",
+        "CardsDialogs": "#FFFFFF",
+        "FlatButtonDown": "#CCCCCC",
+    },
+}
 
-        # initialize grid size
-        self.cols = 1
+class WelcomePage(Screen):
+    pass
+                
+# Display list of exercises
+class MenuPage(Screen):
+    def change_exercise_name(self, exercise_name):
+        print("Changing to", exercise_name)
+        vfit_app.selected_exercise_name = exercise_name
+        vfit_app.root.current = 'Exercise'
 
-        welcome_button = Button(
-            text='Welcome',
-            font_size='32'  # todo: change to dynamically change based on window size
-            # size_hint=(1, 1),
-            # pos_hint={'x': .2, 'y': .2},
-        )
-        welcome_button.bind(on_press=welcome_button_event)
-        self.add_widget(welcome_button)
+class KivyCamera(Image):
+    def __init__(self, capture, fps, **kwargs):
+        super(KivyCamera, self).__init__(**kwargs)
+        self.capture = capture
+        Clock.schedule_interval(self.update, 1.0 / fps)
 
+    def update(self, dt):
+        print("updating")
+        ret, frame = self.capture.read()
+        if ret:
+            # convert it to texture
+            buf1 = cv2.flip(frame, 0)
+            buf = buf1.tostring()
+            image_texture = Texture.create(
+                size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
+            image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
+            # display image from the texture
+            self.texture = image_texture
 
-def welcome_button_event(self):
-    vfit_app.screen_manager.current = 'Setup'
 
 
 # Display list of exercises
-class MenuPage(GridLayout):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+class ExercisePage(Screen):
+    name = 'Exercise'
+    print("EXERCISE")
 
-        self.rows = 3
-        self.add_widget(Button(
-            text="SETTINGS",
-            on_press=self.settings_button
-        ))
-        self.add_widget(Label(text="Select an exercise to be begin"))
+    def build(self):
+        layout = MDGridLayout()
+        layout.rows = 2
+        print("building camera")
+        layout.add_widget(MDLabel(text=vfit_app.selected_exercise_name), halign='center')
+        self.capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        self.my_camera = KivyCamera(capture=self.capture, fps=60)
+        layout.add_widget(self.my_camera)
+        return layout
 
-        # generate Exercise menu
-        exercise_layout = GridLayout()
-        exercise_num = 4
-        exercise_layout.cols = exercise_num
-        for i in range(exercise_num):
-            exercise_name = "Exercise " + str(i+1)
-            temp = Button(
-                text=exercise_name,
-                on_press=lambda *args: exercise_button_event(exercise_name, *args))
+    def on_stop(self):
+        #without this, app will not exit even if the window is closed
+        self.capture.release()
+        
+class ComponentSetupPage(Screen):
+    pass
+    settings_text = StringProperty("INFO GOES HERE")
 
-            # bind button to event
-            # temp.bind(on_press=exercise_button_event(exercise_name))
-            # temp.bind(on_press=lambda *args: self.exercise_button_event(exercise_name, *args))
-
-            # Button(on_press=lambda *args: self.my_function('btn1', *args))
-
-            exercise_layout.add_widget(temp)
-
-        # Add Exercise Menu
-        self.add_widget(exercise_layout)
-    def settings_button(self, instance):
-        vfit_app.screen_manager.current="Setup"
-
-def exercise_button_event(self, exercise_name):
-    print(exercise_name)
-    vfit_app.screen_manager.current = 'Exercise'
-    vfit_app.selected_exercise = exercise_name
-
-
-# Display list of exercises
-class ExercisePage(GridLayout):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.rows = 2
-        self.exercise_label = Label(text="selected exercise: " + vfit_app.selected_exercise)  # todo: dynamically update text to selected exercise
-        self.add_widget(self.exercise_label)
-
-        feed_layout = GridLayout()
-        feed_layout.cols = 2
-        feed_layout.add_widget(Label(text='VIDEO FEED'))
-        feed_layout.add_widget(Label(text='REFERENCE'))
-
-        self.add_widget(feed_layout)
-
-class ComponentSetupPage(GridLayout):
-    settings_text = "INFO GOES HERE"
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.rows = 3
-
-        # Buttons
-        menu_layout = GridLayout()
-        menu_layout.rows = 3
-
-        # Video
-        video_row = GridLayout()
-        video_row.cols = 2
-        video_row.add_widget(Label(text="VIDEO"))
-        video_drop = DropDown()
-        video_row.add_widget(video_drop)
-        video_button = Button(
-            text="VIDEO"
-        )
-        menu_layout.add_widget(video_row)
-        # Voice
-        voice_row = GridLayout()
-        voice_row.cols = 3
-        voice_row.add_widget(Label(text="VOICE"))
-        voice_button = Button(
-            text="VOICE",
-            on_press=self.voice_button_event
-        )
-        voice_row.add_widget(voice_button)
-        voice_row.add_widget(ToggleButton(
-            text="TOGGLE MIC",
-            on_press=self.test_voice_button
-        ))
-        menu_layout.add_widget(voice_row)
-        # Audio
-        audio_row = GridLayout()
-        audio_row.cols = 2
-        audio_row.add_widget(Label(text="AUDIO"))
-        audio_row.add_widget(Slider())
-        audio_button = Button(
-            text="AUDIO"
-        )
-        menu_layout.add_widget(audio_row)
-
-        self.add_widget(Label(text="SETTINGS"))
-        self.add_widget(menu_layout)
-        self.add_widget(Button(text="READY?", on_press=self.ready_button_event))
-    def test_voice_button(self, instance):
-        runLoop()
+    def test_voice_button(self):
+        # runLoop()
         print("TEST VOICE")
 
-    def voice_button_event(self, instance):
+    def voice_button_event(self):
         print("voice button clicked")
         self.settings_text = "VOICE CHANGED"
 
-    def ready_button_event(self, instance):
-        vfit_app.screen_manager.current = "Menu"
+    def test_video_button(self):
+        print("test video")
+        
+class WindowManager(ScreenManager):
+    pass
+
+def recognize_speech_from_mic(recognizer, microphone):
+    """Transcribe speech from recorded from `microphone`.
+
+    Returns a dictionary with three keys:
+    "success": a boolean indicating whether or not the API request was
+               successful
+    "error":   `None` if no error occured, otherwise a string containing
+               an error message if the API could not be reached or
+               speech was unrecognizable
+    "transcription": `None` if speech could not be transcribed,
+               otherwise a string containing the transcribed text
+    """
+    # check that recognizer and microphone arguments are appropriate type
+    if not isinstance(recognizer, sr.Recognizer):
+        raise TypeError("`recognizer` must be `Recognizer` instance")
+
+    if not isinstance(microphone, sr.Microphone):
+        raise TypeError("`microphone` must be `Microphone` instance")
+
+    # adjust the recognizer sensitivity to ambient noise and record audio
+    # from the microphone
+    print("Listening...")
+    with microphone as source:
+        recognizer.adjust_for_ambient_noise(source)
+        audio = recognizer.listen(source)
+
+    # set up the response object
+    response = {
+        "success": True,
+        "error": None,
+        "transcription": None
+    }
 
 
-class VFITApp(App):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.setup_page = None
-        self.exercise_page = None
-        self.menu_page = None
-        self.welcome_page = None
-        self.screen_manager = None
-        self.selected_exercise = ""
+    print("Transcribing Audio...")
 
-    def build(self):
-        # We are going to use screen manager, so we can add multiple screens
-        # and switch between them
-        self.screen_manager = ScreenManager()
+    # try recognizing the speech in the recording
+    # if a RequestError or UnknownValueError exception is caught,
+    #     update the response object accordingly
+    try:
+        response["transcription"] = recognizer.recognize_google(audio)
+    except sr.RequestError:
+        # API was unreachable or unresponsive
+        response["success"] = False
+        response["error"] = "API unavailable"
+    except sr.UnknownValueError:
+        # speech was unintelligible
+        response["error"] = "Unable to recognize speech"
 
-        # Initial, connection screen (we use passed in name to activate screen)
-        # First create a page, then a new screen, add page to screen and screen to screen manager
-        self.welcome_page = WelcomePage()
-        screen = Screen(name='Welcome')
-        screen.add_widget(self.welcome_page)
-        self.screen_manager.add_widget(screen)
+    return response 
 
-        # Menu Page
-        self.menu_page = MenuPage()
-        screen = Screen(name='Menu')
-        screen.add_widget(self.menu_page)
-        self.screen_manager.add_widget(screen)
+def listener(app):
 
-        # Exercise Page
-        self.exercise_page = ExercisePage()
-        screen = Screen(name='Exercise')
-        screen.add_widget(self.exercise_page)
-        self.screen_manager.add_widget(screen)
+   r = sr.Recognizer()
+   print(sr.Microphone.list_microphone_names())
+   mic = sr.Microphone(device_index=3)
 
-        # Setup Page
-        self.setup_page = ComponentSetupPage()
-        screen = Screen(name='Setup')
-        screen.add_widget(self.setup_page)
-        self.screen_manager.add_widget(screen)
+   while True:
 
-        return self.screen_manager
+       response = recognize_speech_from_mic(r, mic)
+       print(response["transcription"])
+
+       if response["success"] and response["transcription"]!=None:
+
+           transcription = response["transcription"].lower()
+
+           if "quit" in transcription or "exit" in transcription or "close" in transcription:
+               # Something to exit the app or go back to WelcomePage
+               pass
+
+           elif "start" in transcription:
+               app.root.current = 'Welcome'
+
+               exercise_button = app.root.current("Setup").ids.exercise_button
+               Clock.schedule_once(lambda dt: exercise_button.trigger_action(0), 0)
+               
+           elif "ready" in transcription:
+               app.root.current = "Menu"
+
+               # Simulate button click
+               exercise_button = app.root.current("Menu").ids.exercise_button
+               Clock.schedule_once(lambda dt: exercise_button.trigger_action(0), 0)
+
+           elif "excercise 1" in transcription:
+               app.root.current = "Exercise"
+
+               # Simulate button click
+               start_button = app.root.get_screen("Exercise").ids.start_button
+               Clock.schedule_once(lambda dt: start_button.trigger_action(0), 0)
+
+           elif "stop" in transcription:
+               app.root.current = "Menu"
+
+               # Simulate button click
+               stop_button = app.root.get_screen("Menu").ids.stop_button
+               Clock.schedule_once(lambda dt: stop_button.trigger_action(0), 0)
+
+       else:
+           print("Unable to transcribe audio")
+           
+# Here, we pass the app object as a parameter to the listener function, so that we can access the Kivy UI elements from 
+# within the function. We also added app as a parameter to the runLoop function and modified it to start the listener 
+# thread with app as an argument:
+
+def runLoop(app):
+   listener_thread = Thread(target=listener, args=(app,))
+   listener_thread.setDaemon(True)
+   listener_thread.start()
+   
+class VFITApp(MDApp):
+   def build(self):
+       Builder.load_file("VFITApp.ky")
+       runLoop(self)
+       return WelcomePage() #to start from the welcome page, modifying this will take us to the different page (as modified) when the app runs
 
 
 if __name__ == "__main__":
+
+    # vid = cv2.VideoCapture(0)
+    #
+    # while (True):
+    #
+    #     # Capture the video frame
+    #     # by frame
+    #     ret, frame = vid.read()
+    #
+    #     # Display the resulting frame
+    #     cv2.imshow('frame', frame)
+    #
+    #     # the 'q' button is set as the
+    #     # quitting button you may use any
+    #     # desired button of your choice
+    #     if cv2.waitKey(1) & 0xFF == ord('q'):
+    #         break
+    #
+    # # After the loop release the cap object
+    # vid.release()
+    # # Destroy all the windows
+    # cv2.destroyAllWindows()
+    # TODO: FIGRURE OUT CV
+    Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
+    
     vfit_app = VFITApp()
     vfit_app.run()
+    
