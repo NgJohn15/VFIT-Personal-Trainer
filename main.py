@@ -1,4 +1,5 @@
 import cv2
+from kivy.core.audio import SoundLoader
 from kivy.uix.image import Image
 from kivy.lang import Builder
 from kivy.properties import StringProperty
@@ -93,6 +94,15 @@ class ComponentSetupPage(Screen):
     pass
     settings_text = StringProperty("INFO GOES HERE")
 
+    def play_sound(self, value):
+        sound = SoundLoader.load('ding.wav')
+        vfit_app.volume = value/100.0
+        sound.volume = vfit_app.volume
+        if sound:
+            sound.play()
+    def my_value(self, value):
+        print(value)
+
     def test_voice_button(self):
         # runLoop()
         print("TEST VOICE")
@@ -109,6 +119,7 @@ class WindowManager(ScreenManager):
 
 class VFITApp(MDApp):
     selected_exercise_name = StringProperty("")
+    volume = 0.5  # default voluime
 
     def build(self):
         kv = Builder.load_file("VFITApp.ky")

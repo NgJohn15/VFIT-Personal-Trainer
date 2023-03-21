@@ -53,6 +53,8 @@ WindowManager:
                     text: 'AUDIO'
                     halign: "center"
                 MDSlider:
+                    id: volume_slider
+                    on_touch_up: root.play_sound(self.value)
 
         Button:
             text: 'READY?'
