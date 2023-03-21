@@ -6,6 +6,9 @@ import keyboard
 import os
 import math
 
+from scipy.spatial.distance import euclidean
+from fastdtw import fastdtw
+
 
 
 def print_text(text, image_name):
@@ -29,30 +32,30 @@ def get_angle(a, b, c):
         angle = 360 - angle
     return angle
 
-def dtw_distance_window(s1, s2, window):
-    n = len(s1)
-    m = len(s2)
-    window = max(window, abs(n-m))   # Adjusting the window size
-    DTW = np.zeros((n+1, m+1))
+'''def dtw_distance_window(s, t):
+    n, m = len(s), len(t)
+    dtw = np.zeros((n+1, m+1))
     for i in range(1, n+1):
-        DTW[i, 0] = np.inf
+        dtw[i, 0] = np.inf
     for i in range(1, m+1):
-        DTW[0, i] = np.inf
-    DTW[0,0] = 0
+        dtw[0, i] = np.inf
+    dtw[0, 0] = 0
     for i in range(1, n+1):
-        for j in range(max(1, i-window), min(m, i+window)+1):
-            cost = np.linalg.norm(s1[i-1]-s2[j-1])
-            DTW[i,j] = cost + min(DTW[i-1,j], DTW[i,j-1], DTW[i-1,j-1])
-    return DTW[n,m]
+        for j in range(1, m+1):
+            cost = abs(s[i-1] - t[j-1])
+            dtw[i, j] = cost + min(dtw[i-1, j], dtw[i, j-1], dtw[i-1, j-1])
+    return dtw[n, m]'''
 
-def get_exercise_array(filename):
+def get_exercise_array(filename, needed_angles_index):
     with open("exercises/{}".format(filename), "r") as template_file:
         temp_arr =[]
         for line in template_file:
             formatted_line = line.strip()
             formatted_line = formatted_line.split(",")
-            formatted_line = [float(i) for i in formatted_line]
+            formatted_line = [float((i)) for i in formatted_line]
             temp_arr.append(formatted_line)
+            """formatted_line = [float((i)) for i in formatted_line]
+            temp_arr.append([formatted_line[i] for i in needed_angles_index])"""
         template_file.close()
         #print(temp_arr)
     return np.array(temp_arr)
@@ -127,10 +130,15 @@ def record():
                                 1920, 1080]).astype(int)), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
                     
                 if (end_time_dtw - start_time_dtw) <= 4:
+                    #pqrint([angles_arr[i] for i in [0,1,2,3]])
                     dtw_array.append(angles_arr)
+                    #dtw_array.append([angles_arr[i] for i in [0,1,2,3]])
                 else:
-                    reference_data = get_exercise_array("bicep.txt")
-                    print(dtw_distance_window(reference_data, dtw_array, math.ceil(0.1 * min(len(dtw_array), len(reference_data)))))
+                    reference_data = get_exercise_array("bicep.txt",[0,1,2,3])
+                    print(reference_data[0])
+                    print(dtw_array[0])
+                    distance, path = fastdtw(reference_data, dtw_array)
+                    print(distance)
                     dtw_array = []
                     start_time_dtw = time.time()
 

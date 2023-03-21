@@ -1,6 +1,8 @@
 import numpy as np
 import math
 
+from fastdtw import fastdtw
+
 with open("exercises/bicep.txt", "r") as template_file:
     temp_arr =[]
     for line in template_file:
@@ -12,7 +14,7 @@ with open("exercises/bicep.txt", "r") as template_file:
 #print(temp_arr)
 x = np.array(temp_arr)
 
-with open("exercises/bicep_6.txt", "r") as template_file:
+with open("exercises/bicep_4.txt", "r") as template_file:
     temp_arr =[]
     for line in template_file:
         formatted_line = line.strip()
@@ -26,6 +28,7 @@ y= np.array(temp_arr)
 def dtw_distance_window(s1, s2, window):
     n = len(s1)
     m = len(s2)
+    window = max(window, abs(n-m))   # Adjusting the window size
     DTW = np.zeros((n+1, m+1))
     for i in range(1, n+1):
         DTW[i, 0] = np.inf
@@ -38,4 +41,4 @@ def dtw_distance_window(s1, s2, window):
             DTW[i,j] = cost + min(DTW[i-1,j], DTW[i,j-1], DTW[i-1,j-1])
     return DTW[n,m]
 
-print(dtw_distance_window(x, y, math.ceil(0.1 * min(len(y), len(x)))))
+print(dtw_distance_window(x, y, 1))
