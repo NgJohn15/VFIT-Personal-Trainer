@@ -8,6 +8,38 @@ from kivymd.app import MDApp
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.gridlayout import MDGridLayout
+from kivymd.uix.label import MDLabel
+
+colors = {
+    "Teal": {
+        "200": "#212121",
+        "500": "#212121",
+        "700": "#212121",
+    },
+    "Red": {
+        "200": "#C25554",
+        "500": "#C25554",
+        "700": "#C25554",
+    },
+    "Blue": {
+        "200": "#0021A5",
+        "500": "#0021A5",
+        "700": "#0021A5"
+    },
+    "Orange": {
+        "200": "#FA4616",
+        "500": "#FA4616",
+        "700": "#FA4616"
+    },
+    "Light": {
+        "StatusBar": "E0E0E0",
+        "AppBar": "#202020",
+        "Background": "#2E3032",
+        "CardsDialogs": "#FFFFFF",
+        "FlatButtonDown": "#CCCCCC",
+    },
+}
 
 class WelcomePage(Screen):
     pass
@@ -27,6 +59,7 @@ class KivyCamera(Image):
         Clock.schedule_interval(self.update, 1.0 / fps)
 
     def update(self, dt):
+        print("updateing")
         ret, frame = self.capture.read()
         if ret:
             # convert it to texture
@@ -38,27 +71,24 @@ class KivyCamera(Image):
             # display image from the texture
             self.texture = image_texture
 
-
-
 # Display list of exercises
 class ExercisePage(Screen):
     name = 'Exercise'
+    print("EXERCISE")
 
     def build(self):
-        layout = MDBoxLayout(orientation='vertical')
-        self.image = Image()
-        layout.add_widget(self.image)
-
-        self.capture = cv2.VideoCapture(0)
-        Clock.schedule_interval(self.load_video, 1.0/60.0)
+        layout = MDGridLayout()
+        layout.rows = 2
+        print("building camera")
+        layout.add_widget(MDLabel(text=vfit_app.selected_exercise_name), halign='center')
+        self.capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        self.my_camera = KivyCamera(capture=self.capture, fps=60)
+        layout.add_widget(self.my_camera)
         return layout
 
-    def load_video(self, *args):
-        ret, frame = self.capture.read()
-        buffer = cv2.flip(frame, 0).toString()
-        texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
-        texture.blit_buffer(buffer, colorfmt='bgr', bufferfmg='ubyte')
-        self.image.texture = texture
+    def on_stop(self):
+        #without this, app will not exit even if the window is closed
+        self.capture.release()
 class ComponentSetupPage(Screen):
     pass
     settings_text = StringProperty("INFO GOES HERE")
@@ -79,37 +109,13 @@ class WindowManager(ScreenManager):
 
 class VFITApp(MDApp):
     selected_exercise_name = StringProperty("")
-    # capture = cv2.VideoCapture(0)
-    # cam = Camera(play=True)
+
     def build(self):
         kv = Builder.load_file("VFITApp.ky")
         return kv
 
 
 if __name__ == "__main__":
-
-    # vid = cv2.VideoCapture(0)
-    #
-    # while (True):
-    #
-    #     # Capture the video frame
-    #     # by frame
-    #     ret, frame = vid.read()
-    #
-    #     # Display the resulting frame
-    #     cv2.imshow('frame', frame)
-    #
-    #     # the 'q' button is set as the
-    #     # quitting button you may use any
-    #     # desired button of your choice
-    #     if cv2.waitKey(1) & 0xFF == ord('q'):
-    #         break
-    #
-    # # After the loop release the cap object
-    # vid.release()
-    # # Destroy all the windows
-    # cv2.destroyAllWindows()
-    # TODO: FIGRURE OUT CV
     Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
     vfit_app = VFITApp()
     vfit_app.run()

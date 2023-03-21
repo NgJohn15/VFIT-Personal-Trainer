@@ -7,19 +7,19 @@ WindowManager:
 
 <WelcomePage>:
     name: 'Welcome'
-    GridLayout:
-        cols: 1
-
-        Button:
-            text: 'Welcome'
-            font_size: '32'
-            on_press: app.root.current = 'Setup'
+    Button:
+        text: 'Welcome'
+        pos_hint: {"center_x":.5, "center_y":.5}
+        background_color: 'blue'
+        line_color: (0, 0, 0, 0)
+        font_size: '32'
+        on_press: app.root.current = 'Setup'
 
 <ComponentSetupPage>:
+    background_color: 'blue'
     name: 'Setup'
-    GridLayout:
-        rows: 3
-
+    BoxLayout:
+        orientation: 'vertical'
         MDLabel:
             text: 'SETTINGS'
             halign: "center"
@@ -92,12 +92,12 @@ WindowManager:
 #    name: 'Exercise'
 #    GridLayout:
 #        rows: 2
-#
 #        MDLabel:
 #            text: app.selected_exercise_name
 #            halign: "center"
 #        GridLayout:
 #            cols: 2
+#            KivyCamera:
 #            MDLabel:
 #                text: 'REFERENCE'
 #                halign: "center"
