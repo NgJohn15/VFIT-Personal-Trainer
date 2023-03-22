@@ -51,7 +51,7 @@ class MenuPage(Screen):
     def change_exercise_name(self, exercise_name):
         print("Changing to", exercise_name)
         vfit_app.selected_exercise_name = exercise_name
-        vfit_app.root.current = 'Exercise'
+        vfit_app.root.current = 'Test'
 
 class KivyCamera(Image):
     def __init__(self, capture, fps, **kwargs):
@@ -94,6 +94,12 @@ class ExercisePage(Screen):
     def on_stop(self):
         #without this, app will not exit even if the window is closed
         self.capture.release()
+
+
+class Exercise2(Screen):
+    pass
+
+
 class ComponentSetupPage(Screen):
     pass
     settings_text = StringProperty("INFO GOES HERE")

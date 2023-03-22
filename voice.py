@@ -69,7 +69,7 @@ def main():
 
 def runLoop():
     r = sr.Recognizer()
-    mic = sr.Microphone(device_index=3)
+    mic = sr.Microphone(device_index=0)
     while (True):
         response = recognize_speech_from_mic(r, mic)
 

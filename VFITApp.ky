@@ -4,6 +4,7 @@ WindowManager:
     ComponentSetupPage:
     MenuPage:
     ExercisePage:
+    Exercise2:
 
 <WelcomePage>:
     name: 'Welcome'
@@ -92,3 +93,17 @@ WindowManager:
             Button:
                 text: 'Exercise 4'
                 on_press: root.change_exercise_name("Exercise 4")
+
+<Exercise2>:
+    name: 'Test'
+    GridLayout:
+        col: 2
+
+        # Img stream
+        Image:
+            source: "stream.png"
+            size: self.texture_size
+
+        # Reference Video
+        VideoPlayer:
+            source: "dog.mp4"
