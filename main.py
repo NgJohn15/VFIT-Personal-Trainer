@@ -104,8 +104,10 @@ class ComponentSetupPage(Screen):
         sound.volume = vfit_app.volume
         if sound:
             sound.play()
-    def my_value(self, value):
-        print(value)
+
+    def slider_move(self, touch, widget, value):
+        if touch.grab_current == widget:
+            self.play_sound(value)
 
     def test_voice_button(self):
         # runLoop()
@@ -122,10 +124,15 @@ class WindowManager(ScreenManager):
 
 
 class VFITApp(MDApp):
+    color_main = "blue"
     selected_exercise_name = StringProperty("")
     volume = 0.5  # default voluime
 
     def build(self):
+        self.theme_cls.theme_style = "Light"
+        self.theme_cls.primary_palette = "Blue"
+        self.theme_cls.accent_palette = "Orange"
+
         kv = Builder.load_file("VFITApp.ky")
         return kv
 
