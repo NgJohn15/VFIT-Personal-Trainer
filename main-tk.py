@@ -4,7 +4,6 @@ import speech_recognition as sr
 import datetime
 import wikipedia
 import webbrowser
-
 import threading
 import queue
 import tkinter as tk
@@ -13,7 +12,7 @@ from tkinter import *
 from tkinter.ttk import *
 from tkinter import filedialog
 import os
-
+import pygame
 
 LARGEFONT =("Verdana", 35)
 
@@ -40,26 +39,26 @@ LARGEFONT =("Verdana", 35)
 #     speak("I am Genos. How can I Serve you?")
 
 
-# def takecommand():
-#     # it takes mic input from the user and return string output
-#     r = sr.Recognizer()
-#     with sr.Microphone() as source:
-#         print("Listening...")
-#         r.pause_threshold = 1
-#         audio = r.listen(source)
-#
-#     try:
-#         print("Recognizing..")
-#         query = r.recognize_google(audio, language='en-in')
-#         print(f"user Said :{query}\n")
-#
-#     except Exception as e:
-#         print(e)
-#
-#         speak("Say that again please")
-#         return "None"
-#
-#     return query
+def takecommand():
+    # it takes mic input from the user and return string output
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        r.pause_threshold = 1
+        audio = r.listen(source)
+
+    try:
+        print("Recognizing..")
+        query = r.recognize_google(audio, language='en-in')
+        print(f"user Said :{query}\n")
+
+    except Exception as e:
+        print(e)
+
+        print("Say that again please")
+        return "None"
+
+    return query
 
 
 # def my_loop(queue):
@@ -143,8 +142,6 @@ LARGEFONT =("Verdana", 35)
 # def btn_press(queue):
 #     controller.show_frame(WelcomePage)
 
-
-
 class VFITApp(tk.Tk):
     # __init__ function for class tkinterApp
     def __init__(self, *args, **kwargs):
@@ -193,29 +190,40 @@ class WelcomePage(tk.Frame):
         welcomebtn.place(relx=.5, rely=.5, anchor='center', relheight=0.5, relwidth=0.5)
 
 
+    
 class SetupPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        
         # WelcomeButton
         setupbtn = ttk.Button(self, text="Mic Test")
         # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
         setupbtn.place(relx=.3, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
-        
-        micrecbtn = ttk.Button(self, text="Mic Recognition")
+        pygame.mixer.init()
+        sound = pygame.mixer.Sound("ding.wav")
+        micrecbtn = ttk.Button(self, text="Mic Recognition",command=lambda: takecommand())
         # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
         micrecbtn.place(relx=.7, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
-        slider = ttk.Scale(
+        def play_sound():
+            # Get the volume value from the slider
+            volume = volume_slider.get() / 100.0
+            # Set the volume of the sound
+            sound.set_volume(volume)
+            # Play the sound
+            sound.play()
+        volume_slider = ttk.Scale(
             self,
             from_=0,
             to=100,
-            orient='horizontal', 
-        )
+            orient='horizontal')
+        volume_slider.set(50)
+        volume_slider.get()
+        volume_slider.place(relx=.6, rely=.5, anchor='center', relheight=0.2, relwidth=0.5)
+        play_button = ttk.Button(self, text="Play Sound", command=play_sound)
+        play_button.place(relx=.6, rely=.55, anchor='center', relheight=0.05, relwidth=0.05)
+        
         text=Label(self, text = "Audio")
         text.config(font =("Courier", 14))
         text.place(relx=.2, rely=.5, anchor='center', relheight=0.1, relwidth=0.1)
-        slider.get()
-        slider.place(relx=.6, rely=.5, anchor='center', relheight=0.2, relwidth=0.5)
         readybtn = ttk.Button(self, text="Ready !", command=lambda: controller.show_frame(ExcercisePage))
         # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
         readybtn.place(relx=.5, rely=.75, anchor='center', relheight=0.2, relwidth=0.4)
