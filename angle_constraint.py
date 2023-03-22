@@ -32,7 +32,7 @@ def get_angle(a, b, c):
     return angle
 
 
-def bicep_curl(joint_arr, angles_arr_stream, state, count):
+def bicep_curls(joint_arr, angles_arr_stream, state, count):
     if (joint_arr[14].visibility >= 0.9):
         if angles_arr_stream[0] > 160 and angles_arr_stream[2] < 10:
             state = "down"
@@ -47,12 +47,51 @@ def bicep_curl(joint_arr, angles_arr_stream, state, count):
             count += 1
     return state, count
 
+def squats(joint_arr, angles_arr_stream, state, count):
+    if (joint_arr[26].visibility >= 0.9):
+        if angles_arr_stream[6] > 160 and (angles_arr_stream[2] > 60 and angles_arr_stream[2] < 120):
+            state = "up"
+        elif angles_arr_stream[6] < 100 and state == "up" and (angles_arr_stream[2] > 65 and angles_arr_stream[2] < 120) and ( angles_arr_stream[4] < 160 and angles_arr_stream[4] > 50):
+            state = "down"
+            count += 1
+    elif (joint_arr[25].visibility >= 0.9):
+        if angles_arr_stream[7] > 160 and (angles_arr_stream[3] > 60 and angles_arr_stream[3] < 120):
+            state = "up"
+        elif angles_arr_stream[7] < 100 and state == "up" and (angles_arr_stream[3] > 65 and angles_arr_stream[3] < 120) and (angles_arr_stream[5] < 160 and angles_arr_stream[5] > 50):
+            state = "down"
+            count += 1
+    return state, count
 
-def record(exercise_type):
+def lunges(joint_arr, angles_arr_stream, state, count):
+    if (joint_arr[26].visibility >= 0.9):
+        if ((angles_arr_stream[6] > 160 and angles_arr_stream[7] > 160) and angles_arr_stream[2] < 15 and angles_arr_stream[4] > 160):
+            state = "up"
+        elif ((angles_arr_stream[6] < 100 and angles_arr_stream[7] < 100) and state == "up" and angles_arr_stream[2] < 15 and angles_arr_stream[4] > 160):
+            state = "down"
+            count += 1
+    elif (joint_arr[25].visibility >= 0.9):
+        if ((angles_arr_stream[6] > 160 and angles_arr_stream[7] > 160) and angles_arr_stream[2] < 15 and angles_arr_stream[5] > 160):
+            state = "up"
+        elif ((angles_arr_stream[6] < 100 and angles_arr_stream[7] < 100) and state == "up" and angles_arr_stream[2] < 15 and angles_arr_stream[5] > 160):
+            state = "down"
+            count += 1
+    return state, count
 
-    cv2.namedWindow('Inference Window', cv2.WINDOW_NORMAL)
+def jumping_jacks(joint_arr, angles_arr_stream, state, count):
+    if (joint_arr[24].visibility >= 0.9 and joint_arr[23].visibility >= 0.9):
+        if ((angles_arr_stream[4] > 172 ) and angles_arr_stream[2] < 15):
+            state = "down"
+        elif (angles_arr_stream[4] < 170 and state == "down" and angles_arr_stream[2] > 160):
+            state = "up"
+            count += 1
+    return state, count
+
+
+def workout_module(exercise_type):
+
+    cv2.namedWindow('Exercise Window', cv2.WINDOW_NORMAL)
     cv2.setWindowProperty(
-        'Inference Window', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        'Exercise Window', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     mp_drawing = mp.solutions.drawing_utils
     mp_drawing_styles = mp.solutions.drawing_styles
@@ -121,14 +160,26 @@ def record(exercise_type):
                     angle = round(angle, 2)
                     angles_arr.append(angle)
                     cv2.putText(image, str(angle), tuple(np.multiply([joints[joint[1]].x, joints[joint[1]].y], [
-                                1920, 1080]).astype(int)), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+                                1920, 1080]).astype(int)), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
 
-                if exercise_type == "bicep_curl":
+                if exercise_type == "bicep_curls":
                     if (joints[13].visibility > 0.9 and joints[14].visibility > 0.9):
                         print_text(
                             "Please turn to one of your sides!", image)
-                    exercise_state, exercise_counter = bicep_curl(
+                    exercise_state, exercise_counter = bicep_curls(
                         joints, angles_arr, exercise_state, exercise_counter)
+                elif exercise_type == "squats":
+                    if (joints[26].visibility > 0.9 and joints[25].visibility > 0.9):
+                        print_text(
+                            "Please turn to one of your sides!", image)
+                    exercise_state, exercise_counter = squats(
+                        joints, angles_arr, exercise_state, exercise_counter)
+                elif exercise_type == "lunges":
+                    exercise_state, exercise_counter = lunges(
+                        joints, angles_arr, exercise_state, exercise_counter)
+                elif exercise_type == "jumping_jacks":
+                    exercise_state, exercise_counter = jumping_jacks(
+                        joints, angles_arr, exercise_state, exercise_counter)                    
 
             else:
                 image = np.zeros((1080, 1920, 3), np.uint8)
@@ -151,11 +202,11 @@ def record(exercise_type):
             cv2.putText(image, text="press q to quit", org=(
                 0, 1065), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(0, 255, 0), thickness=1)
             cv2.putText(image, text=exercise_state, org=(
-                1800, 40), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(0, 255, 0), thickness=1)
+                1800, 40), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(255, 0, 0), thickness=1)
             cv2.putText(image, text="Rep: " + str(exercise_counter), org=(
-                1600, 40), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(0, 255, 0), thickness=1)
+                1600, 40), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(255, 0, 0), thickness=1)
 
-            cv2.imshow('Inference Window', image)
+            cv2.imshow('Exercise Window', image)
             if (cv2.waitKey(5) & 0xFF == ord('q')) or (keyboard.is_pressed("q")):
                 break
 
@@ -166,4 +217,24 @@ def record(exercise_type):
 
 
 if __name__ == "__main__":
-    record("bicep_curl")
+    print("The following exercises are available [Select One]:")
+    print("1. Bicep Curls")
+    print("2. Squats")
+    print("3. Lunges")
+    print("4. Jumping Jacks\n")
+    
+    try:
+        chosen_workout = int(input())
+
+        if chosen_workout == 1:
+            workout_module("bicep_curls")
+        elif chosen_workout == 2:
+            workout_module("squats")
+        elif chosen_workout == 3:
+            workout_module("lunges")
+        elif chosen_workout == 4:
+            workout_module("jumping_jacks")
+        else:
+            print("Invalid Selection")
+    except:
+        print("Enter numbers only")
