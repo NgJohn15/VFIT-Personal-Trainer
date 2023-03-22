@@ -15,7 +15,6 @@ WindowManager:
         on_press: app.root.current = 'Setup'
 
 <ComponentSetupPage>:
-    background_color: 'blue'
     name: 'Setup'
     BoxLayout:
         orientation: 'vertical'
@@ -32,6 +31,7 @@ WindowManager:
                     halign: "center"
                 Button:
                     text: 'TEST VIDEO'
+                    background_color: 'blue'
                     on_press: root.test_video_button()
 
             GridLayout:
@@ -41,9 +41,12 @@ WindowManager:
                     halign: "center"
                 Button:
                     text: 'VOICE'
+                    background_color: 'blue'
                     on_press: root.voice_button_event()
                 ToggleButton:
                     text: 'TOGGLE MIC'
+                    background_color: 'blue'
+                    background_disabled_down: 'orange'
                     on_press: root.test_voice_button()
 
             GridLayout:
@@ -58,6 +61,7 @@ WindowManager:
 
         Button:
             text: 'READY?'
+            background_color: 'blue'
             on_press: app.root.current = 'Menu'
 
 <MenuPage>
