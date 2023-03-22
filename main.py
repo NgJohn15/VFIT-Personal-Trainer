@@ -77,6 +77,10 @@ class ExercisePage(Screen):
     name = 'Exercise'
     print("EXERCISE")
 
+    # 2 cols
+    # col 1 "updating img" "cam view"
+    # col 2 "repeating video play" "reference"
+    # [  IMG           |        REF         ]
     def build(self):
         layout = MDGridLayout()
         layout.rows = 2
