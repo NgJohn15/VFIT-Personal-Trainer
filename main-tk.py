@@ -8,6 +8,8 @@ from tkinter import *
 from tkinter.ttk import *
 import pygame
 
+from tkCamera import tkCamera
+
 
 class VoiceThread(threading.Thread):
     def __init__(self, *args, **kwargs):
@@ -82,6 +84,7 @@ def my_loop():
 class VFITApp(tk.Tk):
     current_page = ""
     previous_page = ""
+    selected_exercise = "bicep_curls"
 
     # __init__ function for class tkinterApp
     def __init__(self, *args, **kwargs):
@@ -224,20 +227,21 @@ class ExercisePage(tk.Frame):
     def __init__(self, parent, controller):
         bicep = tk.PhotoImage(file='exercises/bicep-clipart-11.png')
         tk.Frame.__init__(self, parent)
-        bicep_btn = ttk.Button(self, text="Bicep", command=lambda: self.select_exercise(""))
+        bicep_btn = ttk.Button(self, text="Bicep", command=lambda: self.select_exercise("bicep_curls"))
         bicep_btn.place(relx=0.2, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
 
-        lunge_btn = ttk.Button(self, text="Lunge", command=lambda: self.select_exercise(""))
+        lunge_btn = ttk.Button(self, text="Lunge", command=lambda: self.select_exercise("lunges"))
         lunge_btn.place(relx=0.4, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
 
-        squat_btn = ttk.Button(self, text="Squat", command=lambda: self.select_exercise(""))
+        squat_btn = ttk.Button(self, text="Squat", command=lambda: self.select_exercise("squats"))
         squat_btn.place(relx=0.6, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
 
-        jumping_btn = ttk.Button(self, text="Jumping", command=lambda: self.select_exercise(""))
+        jumping_btn = ttk.Button(self, text="Jumping", command=lambda: self.select_exercise("jumping_jacks"))
         jumping_btn.place(relx=0.8, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
 
-    def select_exercise(self, *arg):
+    def select_exercise(self, exercise_name):
         app.change_page_to_n(VideoPage, "")
+        app.selected_exercise = exercise_name
 
 
 class VideoPage(tk.Frame):
@@ -245,7 +249,43 @@ class VideoPage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.stream_widgets = []
+
         # insert video feed and ref video
+        exercise = 'bicep_curls'
+        # HARDCODE TODO: Dynamically update sources
+        sources = [  # (text, source)
+            # local webcams
+            ("me", 0, exercise),
+            # remote videos (or streams)
+            (
+                "Zakopane, Poland",
+                "./exercises/" + exercise + ".mp4", "None"
+            ),
+        ]
+
+        width = self.winfo_screenwidth() // 2
+        height = self.winfo_screenheight()
+
+        columns = 2
+        for number, (text, source, exercise_type) in enumerate(sources):
+            widget = tkCamera(self, text, source, width, height, exercise_type=exercise_type)
+            row = number // columns
+            col = number % columns
+            widget.grid(row=row, column=col)
+            self.stream_widgets.append(widget)
+
+        # self.parent.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+    def on_closing(self, event=None):
+        """TODO: add docstring"""
+
+        print("[App] stoping threads")
+        for widget in self.stream_widgets:
+            widget.vid.running = False
+
+        print("[App] exit")
+        self.parent.destroy()
 
 
 if __name__ == "__main__":
