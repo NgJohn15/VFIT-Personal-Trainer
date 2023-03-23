@@ -18,7 +18,7 @@ import pygame
 
 
 class VoiceThread(threading.Thread):
-    def __init__(self,  *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(VoiceThread, self).__init__(*args, **kwargs)
         self._stop_event = threading.Event()
 
@@ -30,6 +30,7 @@ class VoiceThread(threading.Thread):
 
     def start(self):
         my_loop()
+
 
 def speak(text):
     engine.say(text)
