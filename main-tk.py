@@ -13,7 +13,7 @@ from tkinter.ttk import *
 from tkinter import filedialog
 import os
 import pygame
-from ttkthemes import ThemedTk
+from tkCamera import tkCamera
 
 LARGEFONT =("Verdana", 35)
 
@@ -143,12 +143,14 @@ def takecommand():
 # def btn_press(queue):
 #     controller.show_frame(WelcomePage)
 
-class VFITApp(ThemedTk):
+class VFITApp(tk.Tk):
+    
+
     # __init__ function for class tkinterApp
     def __init__(self, *args, **kwargs):
         # __init__ function for class Tk
-        ThemedTk.__init__(self, *args, **kwargs, theme="radiance")
-        
+        tk.Tk.__init__(self, *args, **kwargs)
+
         # creating a container
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
@@ -186,7 +188,7 @@ class WelcomePage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         # WelcomeButton
-        welcomebtn = ttk.Button(self, text="Welcome", padding=10, command=lambda: controller.show_frame(SetupPage))
+        welcomebtn = ttk.Button(self, text="Welcome", command=lambda: controller.show_frame(SetupPage))
         # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
         welcomebtn.place(relx=.5, rely=.5, anchor='center', relheight=0.5, relwidth=0.5)
 
@@ -205,13 +207,13 @@ class SetupPage(tk.Frame):
         micrecbtn.place(relx=.7, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
         def play_sound(self):
             # Get the volume value from the slider
-            new_volume = volume_slider.get()/100
+            new_volume = volume_slider.get()
             snapped_value = int(round(float(new_volume) / 10)) * 10
             
             # print(snapped_value)
             # print(new_volume)
             # Set the volume of the sound
-            sound.set_volume(new_volume)
+            sound.set_volume(snapped_value)
             # Play the sound
             sound.play()
             
@@ -224,7 +226,7 @@ class SetupPage(tk.Frame):
             command= play_sound)
         
         volume_slider.get()
-        volume_slider.place(relx=.6, rely=.5, anchor='center', relheight=0.05, relwidth=0.5)
+        volume_slider.place(relx=.6, rely=.5, anchor='center', relheight=0.2, relwidth=0.5)
         
         text=Label(self, text = "Audio")
         text.config(font =("Courier", 14))
@@ -237,38 +239,30 @@ class SetupPage(tk.Frame):
 class ExcercisePage(tk.Frame):
     
     def __init__(self, parent, controller):
+        text = "bicep_curl"
+        bicep = tk.PhotoImage(file='bicep-clipart-11.png')
         tk.Frame.__init__(self, parent)
-        
-        bicep_image = tk.PhotoImage(file="bicep_muscle.png")
-        bicep_image = bicep_image.subsample(2, 1)
-        bicepbtn = tk.Button(self, text="Bicep", image = bicep_image, compound="top", command=lambda: controller.show_frame(VideoPage), font=("Arial", 40), pady=100)
-        bicepbtn.image = bicep_image
+        bicepbtn = ttk.Button(self, text="Bicep", command=lambda: controller.show_frame(VideoPage))
+        # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
         bicepbtn.place(relx=0.2, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
         
-        lunges_image = tk.PhotoImage(file="lunges.png")
-        lunges_image = lunges_image.subsample(2, 1)
-        lungebtn = tk.Button(self, text="Lunges", image = lunges_image, compound="top", command=lambda: controller.show_frame(VideoPage), font=("Arial", 40), pady=300)
-        lungebtn.image = lunges_image
+        lungebtn = ttk.Button(self, text="Lunge", command=lambda: controller.show_frame(VideoPage))
+        # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
         lungebtn.place(relx=0.4, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
         
-        squats_image = tk.PhotoImage(file="squats.png")
-        squats_image = squats_image.subsample(2, 1)
-        squatbtn = tk.Button(self, text="Squats", image = squats_image, compound="top", command=lambda: controller.show_frame(VideoPage), font=("Arial", 40), pady=190)
-        squatbtn.image = squats_image
+        squatbtn = ttk.Button(self, text="Squat", command=lambda: controller.show_frame(VideoPage))
+        # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
         squatbtn.place(relx=0.6, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
         
-        jumping_image = tk.PhotoImage(file="jumping.png")
-        jumping_image = jumping_image.subsample(1, 1)
-        jumpingbtn = tk.Button(self, text="Jumping", image = jumping_image, compound="top", command=lambda: controller.show_frame(VideoPage), font=("Arial", 40), pady=420)
-        jumpingbtn.image = jumping_image
+        jumpingbtn = ttk.Button(self, text="Jumping", command=lambda: controller.show_frame(VideoPage))
+        # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
         jumpingbtn.place(relx=0.8, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
         
 class VideoPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         # insert video feed and ref video
-        backbtn = tk.Button(self, text="Go Back", command=lambda: controller.show_frame(ExcercisePage), font=("Arial", 10), padx=30)
-        backbtn.place(relx=0.01, rely=0.01, anchor='center', relheight=0.02, relwidth=0.025)
+        
         
         
 
