@@ -7,7 +7,7 @@ from tkinter import ttk
 from tkinter import *
 from tkinter.ttk import *
 import pygame
-
+from ttkthemes import ThemedTk
 from tkCamera import tkCamera
 
 
@@ -81,7 +81,7 @@ def my_loop():
             break  # exit loop and thread will end
 
 
-class VFITApp(tk.Tk):
+class VFITApp(ThemedTk):
     current_page = ""
     previous_page = ""
     selected_exercise = "bicep_curls"
@@ -89,7 +89,7 @@ class VFITApp(tk.Tk):
 
     # __init__ function for class tkinterApp
     def __init__(self, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
+        ThemedTk.__init__(self, *args, **kwargs, theme='radiance')
         # Escape fullscreen
         self.bind("<Escape>", lambda event: self.attributes("-fullscreen", False))
         # Fullscreen
