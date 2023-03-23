@@ -25,6 +25,7 @@ class VoiceThread(threading.Thread):
 
 
 def speak(text):
+    print("TTS:", text)
     engine.say(text)
     engine.runAndWait()
 
@@ -56,20 +57,39 @@ def my_loop():
         query = get_command().lower()
 
         # Logic for executing task based query
-        if 'welcome' in query:
-            app.change_to_setup_page()
+        if 'go to' in query:
+            if 'welcome page' in query:
+                app.change_page_to_n(WelcomePage, "Changing to Welcome Page")
+            elif 'set up page' in query or 'setup page' in query:
+                app.change_page_to_n(SetupPage, "Changing to Setup Page")
+            elif 'exercise selection' in query:
+                app.change_page_to_n(ExercisePage, "Changing to Exercise Selection")
+            else:
+                speak("Try Go To Command again")
+        elif 'go back' in query:
+            app.change_to_previous()
 
+        elif 'welcome' in query:
+            app.change_page_to_n(SetupPage, "Setup")
+        elif 'ready' in query:
+            app.change_page_to_n(ExercisePage, 'Exercise Selection')
         elif 'exit program' in query:
-            speak("V-FIT PT is now ending")
+            speak("exiting V-FIT PT")
             app.quit()
             break  # exit loop and thread will end
 
 
 class VFITApp(tk.Tk):
+    current_page = ""
+    previous_page = ""
+
     # __init__ function for class tkinterApp
     def __init__(self, *args, **kwargs):
-        # __init__ function for class Tk
         tk.Tk.__init__(self, *args, **kwargs)
+        # Escape fullscreen
+        self.bind("<Escape>", lambda event: self.attributes("-fullscreen", False))
+        # Fullscreen
+        self.attributes("-fullscreen", True)
 
         # creating a container
         container = tk.Frame(self)
@@ -95,6 +115,7 @@ class VFITApp(tk.Tk):
         exercise_frame.grid(row=0, column=0, sticky="nsew")
         video_frame.grid(row=0, column=0, sticky="nsew")
 
+        self.current_page = WelcomePage.name
         self.show_frame(WelcomePage)
 
     # to display the current frame passed as
@@ -103,12 +124,38 @@ class VFITApp(tk.Tk):
         frame = self.frames[cont]
         frame.tkraise()
 
-    def change_to_setup_page(self):
-        self.show_frame(SetupPage)
-        speak("Setup")
+    def change_page_to_n(self, page, msg: str):
+        """
+        Changes current to provided page then TTS msg
+        :param page: Destination page
+        :param msg: Msg to spoken out loud
+        :return: void
+        """
+        # Update App Data
+        app.previous_page = app.current_page
+        app.current_page = page.name
+
+        self.show_frame(page)
+        speak(msg)
+
+    def change_to_previous(self):
+        msg = "Going back"
+        if app.previous_page == 'Welcome':
+            self.change_page_to_n(WelcomePage, msg)
+        elif app.previous_page == 'Setup':
+            self.change_page_to_n(SetupPage, msg)
+        elif app.previous_page == 'Exercise':
+            self.change_page_to_n(ExercisePage, msg)
+        elif app.previous_page == 'Video':
+            self.change_page_to_n(VideoPage, msg)
+
+    def end_fullscreen(self):
+        self.attributes("-fullscreen", False)
 
 
 class WelcomePage(tk.Frame):
+    name = "Welcome"
+
     def __init__(self, parent, controller):
         self.controller = controller
         tk.Frame.__init__(self, parent)
@@ -118,7 +165,7 @@ class WelcomePage(tk.Frame):
         welcome_btn.place(relx=.5, rely=.5, anchor='center', relheight=0.5, relwidth=0.5)
 
     def welcome_button_pressed(self):
-        self.controller.show_frame(SetupPage)
+        app.change_page_to_n(SetupPage, "")
 
     # function with arguments
     # def welcome_button_pressed(self, arg):
@@ -126,11 +173,13 @@ class WelcomePage(tk.Frame):
 
 
 class SetupPage(tk.Frame):
+    name = "Setup"
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         # WelcomeButton
-        setup_btn = ttk.Button(self, text="Mic Test")
-        setup_btn.place(relx=.3, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
+        mic_test_btn = ttk.Button(self, text="Mic Test", command=lambda: self.mic_test())
+        mic_test_btn.place(relx=.3, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
         pygame.mixer.init()  # todo no volume
         sound = pygame.mixer.Sound("sounds/ding.wav")
         mic_rec_btn = ttk.Button(self, text="Mic Recognition", command=lambda: get_command())
@@ -161,29 +210,39 @@ class SetupPage(tk.Frame):
         text = Label(self, text="Audio")
         text.config(font=("Courier", 14))
         text.place(relx=.2, rely=.5, anchor='center', relheight=0.1, relwidth=0.1)
-        ready_btn = ttk.Button(self, text="Ready !", command=lambda: controller.show_frame(ExercisePage))
+        ready_btn = ttk.Button(self, text="Ready !", command=lambda: app.change_page_to_n(ExercisePage, ""))
         ready_btn.place(relx=.5, rely=.75, anchor='center', relheight=0.2, relwidth=0.4)
+
+    def mic_test(self):
+        speak("Listening")
+        speak("You said " + get_command())
 
 
 class ExercisePage(tk.Frame):
+    name = "Exercise"
 
     def __init__(self, parent, controller):
         bicep = tk.PhotoImage(file='exercises/bicep-clipart-11.png')
         tk.Frame.__init__(self, parent)
-        bicep_btn = ttk.Button(self, text="Bicep", command=lambda: controller.show_frame(VideoPage))
+        bicep_btn = ttk.Button(self, text="Bicep", command=lambda: self.select_exercise(""))
         bicep_btn.place(relx=0.2, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
 
-        lunge_btn = ttk.Button(self, text="Lunge", command=lambda: controller.show_frame(VideoPage))
+        lunge_btn = ttk.Button(self, text="Lunge", command=lambda: self.select_exercise(""))
         lunge_btn.place(relx=0.4, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
 
-        squat_btn = ttk.Button(self, text="Squat", command=lambda: controller.show_frame(VideoPage))
+        squat_btn = ttk.Button(self, text="Squat", command=lambda: self.select_exercise(""))
         squat_btn.place(relx=0.6, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
 
-        jumping_btn = ttk.Button(self, text="Jumping", command=lambda: controller.show_frame(VideoPage))
+        jumping_btn = ttk.Button(self, text="Jumping", command=lambda: self.select_exercise(""))
         jumping_btn.place(relx=0.8, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
+
+    def select_exercise(self, *arg):
+        app.change_page_to_n(VideoPage, "")
 
 
 class VideoPage(tk.Frame):
+    name = "Video"
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         # insert video feed and ref video
