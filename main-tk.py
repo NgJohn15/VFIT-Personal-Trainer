@@ -256,6 +256,10 @@ class VideoPage(tk.Frame):
         self.height = self.winfo_screenheight()
 
     def update_sources(self):
+        # garbage collection
+        for widget in self.stream_widgets:
+            widget.vid.running = False
+
         self.stream_widgets.clear()
         print("updating to", app.selected_exercise)
         for number, (text, source, exercise_type) in enumerate(self.get_sources(app.selected_exercise)):
