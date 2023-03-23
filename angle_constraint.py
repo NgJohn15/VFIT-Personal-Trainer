@@ -6,9 +6,6 @@ import keyboard
 import os
 import math
 
-from scipy.spatial.distance import euclidean
-from fastdtw import fastdtw
-
 
 def print_text(text, image_name):
     font = cv2.FONT_HERSHEY_DUPLEX
@@ -36,13 +33,13 @@ def bicep_curls(joint_arr, angles_arr_stream, state, count):
     if (joint_arr[14].visibility >= 0.9):
         if angles_arr_stream[0] > 160 and angles_arr_stream[2] < 10:
             state = "down"
-        elif angles_arr_stream[0] < 30 and state == "down" and angles_arr_stream[2] < 10:
+        elif angles_arr_stream[0] < 45 and state == "down" and angles_arr_stream[2] < 10:
             state = "up"
             count += 1
     elif (joint_arr[13].visibility >= 0.9):
         if angles_arr_stream[1] > 160 and angles_arr_stream[3] < 10:
             state = "down"
-        elif angles_arr_stream[1] < 30 and state == "down" and angles_arr_stream[3] < 10:
+        elif angles_arr_stream[1] < 45 and state == "down" and angles_arr_stream[3] < 10:
             state = "up"
             count += 1
     return state, count
@@ -108,7 +105,7 @@ def workout_module(exercise_type):
     end_time_dtw = 0
     dtw_array = []
 
-    with mp_pose.Pose(
+    with mp_pose.Pose( 
             model_complexity=1,
             min_detection_confidence=0.5,
             min_tracking_confidence=0.5) as pose:
@@ -118,6 +115,9 @@ def workout_module(exercise_type):
 
         start_time = 0
         end_time = 0
+
+        loopover_temp_arr = 0
+
 
         while cap.isOpened():
             success, image = cap.read()
@@ -210,8 +210,6 @@ def workout_module(exercise_type):
             if (cv2.waitKey(5) & 0xFF == ord('q')) or (keyboard.is_pressed("q")):
                 break
 
-            end_time_dtw = time.time()
-
     cap.release()
     cv2.destroyAllWindows()
 
@@ -227,7 +225,7 @@ if __name__ == "__main__":
         chosen_workout = int(input())
 
         if chosen_workout == 1:
-            workout_module("bicep_curls")
+            print(workout_module("bicep_curls"))
         elif chosen_workout == 2:
             workout_module("squats")
         elif chosen_workout == 3:
