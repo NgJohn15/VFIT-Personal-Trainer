@@ -57,11 +57,10 @@ def my_loop():
 
         # Logic for executing task based query
         if 'welcome' in query:
-            speak("Let's begin")
-            WelcomePage.welcome_button_pressed()
+            app.change_to_setup_page()
 
         elif 'exit program' in query:
-            speak("VFIT PT is now ending")
+            speak("V-FIT PT is now ending")
             app.quit()
             break  # exit loop and thread will end
 
@@ -103,6 +102,10 @@ class VFITApp(tk.Tk):
     def show_frame(self, cont):
         frame = self.frames[cont]
         frame.tkraise()
+
+    def change_to_setup_page(self):
+        self.show_frame(SetupPage)
+        speak("Setup")
 
 
 class WelcomePage(tk.Frame):
