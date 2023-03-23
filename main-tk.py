@@ -11,19 +11,6 @@ import pygame
 from tkCamera import tkCamera
 
 
-# def get_sources():
-#     sources = [  # (text, source)
-#         # local webcams
-#         ("me", 0, app.selected_exercise),
-#         # remote videos (or streams)
-#         (
-#             "Zakopane, Poland",
-#             "./exercises/" + app.selected_exercise + ".mp4", "None"
-#         ),
-#     ]
-#     return sources
-
-
 class VoiceThread(threading.Thread):
     def __init__(self, *args, **kwargs):
         super(VoiceThread, self).__init__(*args, **kwargs)
@@ -240,20 +227,21 @@ class ExercisePage(tk.Frame):
     def __init__(self, parent, controller):
         bicep = tk.PhotoImage(file='exercises/bicep-clipart-11.png')
         tk.Frame.__init__(self, parent)
-        bicep_btn = ttk.Button(self, text="Bicep", command=lambda: self.select_exercise(""))
+        bicep_btn = ttk.Button(self, text="Bicep", command=lambda: self.select_exercise("bicep_curls"))
         bicep_btn.place(relx=0.2, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
 
-        lunge_btn = ttk.Button(self, text="Lunge", command=lambda: self.select_exercise(""))
+        lunge_btn = ttk.Button(self, text="Lunge", command=lambda: self.select_exercise("lunges"))
         lunge_btn.place(relx=0.4, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
 
-        squat_btn = ttk.Button(self, text="Squat", command=lambda: self.select_exercise(""))
+        squat_btn = ttk.Button(self, text="Squat", command=lambda: self.select_exercise("squats"))
         squat_btn.place(relx=0.6, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
 
-        jumping_btn = ttk.Button(self, text="Jumping", command=lambda: self.select_exercise(""))
+        jumping_btn = ttk.Button(self, text="Jumping", command=lambda: self.select_exercise("jumping_jacks"))
         jumping_btn.place(relx=0.8, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
 
-    def select_exercise(self, *arg):
+    def select_exercise(self, exercise_name):
         app.change_page_to_n(VideoPage, "")
+        app.selected_exercise = exercise_name
 
 
 class VideoPage(tk.Frame):
@@ -276,9 +264,8 @@ class VideoPage(tk.Frame):
             ),
         ]
 
-        width = self.winfo_screenwidth()//2
+        width = self.winfo_screenwidth() // 2
         height = self.winfo_screenheight()
-        print(width, height)
 
         columns = 2
         for number, (text, source, exercise_type) in enumerate(sources):
