@@ -1,19 +1,11 @@
-import os
 import sys
-
 import pyttsx3
 import speech_recognition as sr
-import datetime
-import wikipedia
-import webbrowser
 import threading
-import queue
 import tkinter as tk
 from tkinter import ttk
 from tkinter import *
 from tkinter.ttk import *
-from tkinter import filedialog
-import os
 import pygame
 
 
@@ -37,7 +29,7 @@ def speak(text):
     engine.runAndWait()
 
 
-def takecommand():
+def get_command():
     # it takes mic input from the user and return string output
     r = sr.Recognizer()
     with sr.Microphone() as source:
@@ -61,7 +53,7 @@ def takecommand():
 
 def my_loop():
     while True:
-        query = takecommand().lower()
+        query = get_command().lower()
 
         # Logic for executing task based query
         if 'welcome' in query:
@@ -91,17 +83,17 @@ class VFITApp(tk.Tk):
 
         welcome_frame = WelcomePage(container, self)
         setup_frame = SetupPage(container, self)
-        excercise_frame = ExcercisePage(container, self)
+        exercise_frame = ExercisePage(container, self)
         video_frame = VideoPage(container, self)
 
         self.frames[WelcomePage] = welcome_frame
         self.frames[SetupPage] = setup_frame
-        self.frames[ExcercisePage] = excercise_frame
+        self.frames[ExercisePage] = exercise_frame
         self.frames[VideoPage] = video_frame
 
         setup_frame.grid(row=0, column=0, sticky="nsew")
         welcome_frame.grid(row=0, column=0, sticky="nsew")
-        excercise_frame.grid(row=0, column=0, sticky="nsew")
+        exercise_frame.grid(row=0, column=0, sticky="nsew")
         video_frame.grid(row=0, column=0, sticky="nsew")
 
         self.show_frame(WelcomePage)
@@ -118,10 +110,9 @@ class WelcomePage(tk.Frame):
         self.controller = controller
         tk.Frame.__init__(self, parent)
         # WelcomeButton
-        welcomebtn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed())
-        # welcomebtn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed("arg"))
-        # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
-        welcomebtn.place(relx=.5, rely=.5, anchor='center', relheight=0.5, relwidth=0.5)
+        welcome_btn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed())
+        # welcome_btn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed("arg"))
+        welcome_btn.place(relx=.5, rely=.5, anchor='center', relheight=0.5, relwidth=0.5)
 
     def welcome_button_pressed(self):
         self.controller.show_frame(SetupPage)
@@ -135,14 +126,12 @@ class SetupPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         # WelcomeButton
-        setupbtn = ttk.Button(self, text="Mic Test")
-        # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
-        setupbtn.place(relx=.3, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
+        setup_btn = ttk.Button(self, text="Mic Test")
+        setup_btn.place(relx=.3, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
         pygame.mixer.init()  # todo no volume
         sound = pygame.mixer.Sound("sounds/ding.wav")
-        micrecbtn = ttk.Button(self, text="Mic Recognition", command=lambda: takecommand())
-        # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
-        micrecbtn.place(relx=.7, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
+        mic_rec_btn = ttk.Button(self, text="Mic Recognition", command=lambda: get_command())
+        mic_rec_btn.place(relx=.7, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
 
         def play_sound(self):
             # Get the volume value from the slider
@@ -169,26 +158,26 @@ class SetupPage(tk.Frame):
         text = Label(self, text="Audio")
         text.config(font=("Courier", 14))
         text.place(relx=.2, rely=.5, anchor='center', relheight=0.1, relwidth=0.1)
-        readybtn = ttk.Button(self, text="Ready !", command=lambda: controller.show_frame(ExcercisePage))
-        readybtn.place(relx=.5, rely=.75, anchor='center', relheight=0.2, relwidth=0.4)
+        ready_btn = ttk.Button(self, text="Ready !", command=lambda: controller.show_frame(ExercisePage))
+        ready_btn.place(relx=.5, rely=.75, anchor='center', relheight=0.2, relwidth=0.4)
 
 
-class ExcercisePage(tk.Frame):
+class ExercisePage(tk.Frame):
 
     def __init__(self, parent, controller):
         bicep = tk.PhotoImage(file='exercises/bicep-clipart-11.png')
         tk.Frame.__init__(self, parent)
-        bicepbtn = ttk.Button(self, text="Bicep", command=lambda: controller.show_frame(VideoPage))
-        bicepbtn.place(relx=0.2, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
+        bicep_btn = ttk.Button(self, text="Bicep", command=lambda: controller.show_frame(VideoPage))
+        bicep_btn.place(relx=0.2, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
 
-        lungebtn = ttk.Button(self, text="Lunge", command=lambda: controller.show_frame(VideoPage))
-        lungebtn.place(relx=0.4, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
+        lunge_btn = ttk.Button(self, text="Lunge", command=lambda: controller.show_frame(VideoPage))
+        lunge_btn.place(relx=0.4, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
 
-        squatbtn = ttk.Button(self, text="Squat", command=lambda: controller.show_frame(VideoPage))
-        squatbtn.place(relx=0.6, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
+        squat_btn = ttk.Button(self, text="Squat", command=lambda: controller.show_frame(VideoPage))
+        squat_btn.place(relx=0.6, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
 
-        jumpingbtn = ttk.Button(self, text="Jumping", command=lambda: controller.show_frame(VideoPage))
-        jumpingbtn.place(relx=0.8, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
+        jumping_btn = ttk.Button(self, text="Jumping", command=lambda: controller.show_frame(VideoPage))
+        jumping_btn.place(relx=0.8, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
 
 
 class VideoPage(tk.Frame):
