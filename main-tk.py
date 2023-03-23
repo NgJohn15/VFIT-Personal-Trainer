@@ -1,46 +1,36 @@
-import os
+import sys
 import pyttsx3
 import speech_recognition as sr
-import datetime
-import wikipedia
-import webbrowser
 import threading
-import queue
 import tkinter as tk
 from tkinter import ttk
-from tkinter import * 
+from tkinter import *
 from tkinter.ttk import *
-from tkinter import filedialog
-import os
 import pygame
-from tkCamera import tkCamera
-
-LARGEFONT =("Verdana", 35)
-
-# --- functions ---
-
-# def speak(text):
-#     engine.say(text)
-#     engine.runAndWait()
-
-# def wishme(queue):
-#     hour = datetime.datetime.now().hour
-#
-#     if 0 <= hour < 12:
-#         text = "Good Morning sir"
-#     elif 12 <= hour < 18:
-#         text = "Good Afternoon sir"
-#     else:
-#         text = "Good Evening sir"
-#
-#     queue.put(f'{text}.')
-#     speak(text)
-#
-#     queue.put("I am Genos. How can I Serve you?\n")
-#     speak("I am Genos. How can I Serve you?")
 
 
-def takecommand():
+class VoiceThread(threading.Thread):
+    def __init__(self, *args, **kwargs):
+        super(VoiceThread, self).__init__(*args, **kwargs)
+        self._stop_event = threading.Event()
+
+    def stop(self):
+        self._stop_event.set()
+
+    def stopped(self):
+        return self._stop_event.is_set()
+
+    def start(self):
+        my_loop()
+
+
+def speak(text):
+    print("TTS:", text)
+    engine.say(text)
+    engine.runAndWait()
+
+
+def get_command():
     # it takes mic input from the user and return string output
     r = sr.Recognizer()
     with sr.Microphone() as source:
@@ -62,94 +52,44 @@ def takecommand():
     return query
 
 
-# def my_loop(queue):
-#     wishme(queue)
-#
-#     while True:
-#         query = takecommand().lower()
-#
-#         # Logic for executing task based query
-#         if 'wikipedia' in query:
-#             queue.put('searching Wikipedia....')
-#             speak('searching Wikipedia....')
-#
-#             query = query.replace("wikipedia", "")
-#             results = wikipedia.summary(query, sentences=5)
-#
-#             queue.put("According to wikipedia" + str(results))
-#
-#             speak("According to wikipedia")
-#             print(results)
-#             speak(results)
-#
-#         elif 'button' == query:
-#             btn_press(queue)
-#
-#         elif 'open youtube' in query:
-#             queue.put("opening youtube.com")
-#             webbrowser.open("youtube.com")
-#
-#         elif 'open google' in query:
-#             queue.put("opening google.com")
-#             webbrowser.open("google.com")
-#
-#         elif 'open stackoverflow' in query:
-#             queue.put("opening stackoverflow.com")
-#             webbrowser.open("stackoverflow.com")
-#
-#         elif 'open mailbox' in query:
-#             webbrowser.open("gmail.com");
-#
-#
-#         elif 'play music' in query:
-#             music_dir = 'D:\\SAHIL\\$ONGS_MJ'
-#             songs = os.listdir(music_dir)
-#
-#             queue.put(f"playing music {songs[0]}")
-#
-#             print(songs)
-#             os.startfile(os.path.join(music_dir, songs[0]))
-#
-#         elif 'the time' in query:
-#             strTime = datetime.datetime.now().strftime("%H:%M:%S")
-#
-#             speak(f"Sir the time is {strTime}", queue)
-#
-#         elif 'how are you' in query:
-#             queue.put("I am fine sir. How are you?")
-#             speak("I am fine sir. How are you?")
-#
-#         elif 'i am fine' in query:
-#             queue.put("that's good to know, how can I help you")
-#             speak("that's good to know, how can I help you")
-#
-#         elif 'goodbye' in query:
-#             queue.put("bye Sir")
-#             speak("bye Sir")
-#             queue.put("\quit")
-#             break # exit loop and thread will end
-#             #exit()
+def my_loop():
+    while True:
+        query = get_command().lower()
 
-# def update_text():
-#     if not queue.empty():
-#         text = queue.get()
-#         if text == '\quit':
-#             root.destroy() # close window and stop `root.mainloop()`
-#             return # don't run `after` again
-#         else:
-#             t.insert('end', text)
-#
-#     root.after(200, update_text)
-# def btn_press(queue):
-#     controller.show_frame(WelcomePage)
+        # Logic for executing task based query
+        if 'go to' in query:
+            if 'welcome page' in query:
+                app.change_page_to_n(WelcomePage, "Changing to Welcome Page")
+            elif 'set up page' in query or 'setup page' in query:
+                app.change_page_to_n(SetupPage, "Changing to Setup Page")
+            elif 'exercise selection' in query:
+                app.change_page_to_n(ExercisePage, "Changing to Exercise Selection")
+            else:
+                speak("Try Go To Command again")
+        elif 'go back' in query:
+            app.change_to_previous()
+        elif 'click on' in query:
+            if 'welcome button' in query and app.current_page == "Welcome":
+                app.change_page_to_n(SetupPage, "Setup")
+            elif 'ready button' in query and app.current_page == "Setup":
+                app.change_page_to_n(ExercisePage, "Exercise selection")
+        elif 'exit program' in query:
+            speak("exiting V-FIT PT")
+            app.quit()
+            break  # exit loop and thread will end
+
 
 class VFITApp(tk.Tk):
-    
+    current_page = ""
+    previous_page = ""
 
     # __init__ function for class tkinterApp
     def __init__(self, *args, **kwargs):
-        # __init__ function for class Tk
         tk.Tk.__init__(self, *args, **kwargs)
+        # Escape fullscreen
+        self.bind("<Escape>", lambda event: self.attributes("-fullscreen", False))
+        # Fullscreen
+        self.attributes("-fullscreen", True)
 
         # creating a container
         container = tk.Frame(self)
@@ -162,19 +102,20 @@ class VFITApp(tk.Tk):
 
         welcome_frame = WelcomePage(container, self)
         setup_frame = SetupPage(container, self)
-        excercise_frame = ExcercisePage(container, self)
+        exercise_frame = ExercisePage(container, self)
         video_frame = VideoPage(container, self)
 
         self.frames[WelcomePage] = welcome_frame
         self.frames[SetupPage] = setup_frame
-        self.frames[ExcercisePage] = excercise_frame
+        self.frames[ExercisePage] = exercise_frame
         self.frames[VideoPage] = video_frame
 
         setup_frame.grid(row=0, column=0, sticky="nsew")
         welcome_frame.grid(row=0, column=0, sticky="nsew")
-        excercise_frame.grid(row=0, column=0, sticky="nsew")
+        exercise_frame.grid(row=0, column=0, sticky="nsew")
         video_frame.grid(row=0, column=0, sticky="nsew")
-        
+
+        self.current_page = WelcomePage.name
         self.show_frame(WelcomePage)
 
     # to display the current frame passed as
@@ -183,116 +124,138 @@ class VFITApp(tk.Tk):
         frame = self.frames[cont]
         frame.tkraise()
 
+    def change_page_to_n(self, page, msg: str):
+        """
+        Changes current to provided page then TTS msg
+        :param page: Destination page
+        :param msg: Msg to spoken out loud
+        :return: void
+        """
+        # Update App Data
+        app.previous_page = app.current_page
+        app.current_page = page.name
+
+        self.show_frame(page)
+        speak(msg)
+
+    def change_to_previous(self):
+        msg = "Going back"
+        if app.previous_page == 'Welcome':
+            self.change_page_to_n(WelcomePage, msg)
+        elif app.previous_page == 'Setup':
+            self.change_page_to_n(SetupPage, msg)
+        elif app.previous_page == 'Exercise':
+            self.change_page_to_n(ExercisePage, msg)
+        elif app.previous_page == 'Video':
+            self.change_page_to_n(VideoPage, msg)
+
+    def end_fullscreen(self):
+        self.attributes("-fullscreen", False)
+
 
 class WelcomePage(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        # WelcomeButton
-        welcomebtn = ttk.Button(self, text="Welcome", command=lambda: controller.show_frame(SetupPage))
-        # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
-        welcomebtn.place(relx=.5, rely=.5, anchor='center', relheight=0.5, relwidth=0.5)
+    name = "Welcome"
 
-    
+    def __init__(self, parent, controller):
+        self.controller = controller
+        tk.Frame.__init__(self, parent)
+        # WelcomeButton
+        welcome_btn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed())
+        # welcome_btn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed("arg"))
+        welcome_btn.place(relx=.5, rely=.5, anchor='center', relheight=0.5, relwidth=0.5)
+
+    def welcome_button_pressed(self):
+        app.change_page_to_n(SetupPage, "")
+
+    # function with arguments
+    # def welcome_button_pressed(self, arg):
+    #     print(arg)
+
+
 class SetupPage(tk.Frame):
+    name = "Setup"
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         # WelcomeButton
-        setupbtn = ttk.Button(self, text="Mic Test")
-        # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
-        setupbtn.place(relx=.3, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
-        pygame.mixer.init()
-        sound = pygame.mixer.Sound("ding.wav")
-        micrecbtn = ttk.Button(self, text="Mic Recognition",command=lambda: takecommand())
-        # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
-        micrecbtn.place(relx=.7, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
+        mic_test_btn = ttk.Button(self, text="Mic Test", command=lambda: self.mic_test())
+        mic_test_btn.place(relx=.3, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
+        pygame.mixer.init()  # todo no volume
+        sound = pygame.mixer.Sound("sounds/ding.wav")
+        mic_rec_btn = ttk.Button(self, text="Mic Recognition", command=lambda: get_command())
+        mic_rec_btn.place(relx=.7, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
+
         def play_sound(self):
             # Get the volume value from the slider
             new_volume = volume_slider.get()
             snapped_value = int(round(float(new_volume) / 10)) * 10
-            
+
             # print(snapped_value)
             # print(new_volume)
             # Set the volume of the sound
             sound.set_volume(snapped_value)
             # Play the sound
             sound.play()
-            
-            
+
         volume_slider = ttk.Scale(
             self,
             from_=0,
             to=100,
             orient='horizontal',
-            command= play_sound)
-        
+            command=play_sound)
+
         volume_slider.get()
         volume_slider.place(relx=.6, rely=.5, anchor='center', relheight=0.2, relwidth=0.5)
-        
-        text=Label(self, text = "Audio")
-        text.config(font =("Courier", 14))
-        text.place(relx=.2, rely=.5, anchor='center', relheight=0.1, relwidth=0.1)
-        readybtn = ttk.Button(self, text="Ready !", command=lambda: controller.show_frame(ExcercisePage))
-        # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
-        readybtn.place(relx=.5, rely=.75, anchor='center', relheight=0.2, relwidth=0.4)
 
-       
-class ExcercisePage(tk.Frame):
-    
+        text = Label(self, text="Audio")
+        text.config(font=("Courier", 14))
+        text.place(relx=.2, rely=.5, anchor='center', relheight=0.1, relwidth=0.1)
+        ready_btn = ttk.Button(self, text="Ready !", command=lambda: app.change_page_to_n(ExercisePage, ""))
+        ready_btn.place(relx=.5, rely=.75, anchor='center', relheight=0.2, relwidth=0.4)
+
+    def mic_test(self):
+        speak("Listening")
+        speak("You said " + get_command())
+
+
+class ExercisePage(tk.Frame):
+    name = "Exercise"
+
     def __init__(self, parent, controller):
-        text = "bicep_curl"
-        bicep = tk.PhotoImage(file='bicep-clipart-11.png')
+        bicep = tk.PhotoImage(file='exercises/bicep-clipart-11.png')
         tk.Frame.__init__(self, parent)
-        bicepbtn = ttk.Button(self, text="Bicep", command=lambda: controller.show_frame(VideoPage))
-        # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
-        bicepbtn.place(relx=0.2, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
-        
-        lungebtn = ttk.Button(self, text="Lunge", command=lambda: controller.show_frame(VideoPage))
-        # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
-        lungebtn.place(relx=0.4, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
-        
-        squatbtn = ttk.Button(self, text="Squat", command=lambda: controller.show_frame(VideoPage))
-        # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
-        squatbtn.place(relx=0.6, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
-        
-        jumpingbtn = ttk.Button(self, text="Jumping", command=lambda: controller.show_frame(VideoPage))
-        # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
-        jumpingbtn.place(relx=0.8, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
-        
+        bicep_btn = ttk.Button(self, text="Bicep", command=lambda: self.select_exercise(""))
+        bicep_btn.place(relx=0.2, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
+
+        lunge_btn = ttk.Button(self, text="Lunge", command=lambda: self.select_exercise(""))
+        lunge_btn.place(relx=0.4, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
+
+        squat_btn = ttk.Button(self, text="Squat", command=lambda: self.select_exercise(""))
+        squat_btn.place(relx=0.6, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
+
+        jumping_btn = ttk.Button(self, text="Jumping", command=lambda: self.select_exercise(""))
+        jumping_btn.place(relx=0.8, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
+
+    def select_exercise(self, *arg):
+        app.change_page_to_n(VideoPage, "")
+
+
 class VideoPage(tk.Frame):
+    name = "Video"
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         # insert video feed and ref video
-        
-        
-        
 
 
 if __name__ == "__main__":
-    
+    engine = pyttsx3.init('sapi5')  # Windows
+    voices = engine.getProperty('voices')
+    engine.setProperty('voice', voices[0].id)
     app = VFITApp()
+    # run voice recognition thread
+    task = threading.Thread(target=my_loop, args=())  # it has to be `,` in `(queue,)` to create tuple with one value
+    task.start()  # start thread
     app.mainloop()
-
-# if __name__ == "__main__":
-#
-#     engine = pyttsx3.init('sapi5') # Windows
-#     voices = engine.getProperty('voices')
-#     engine.setProperty('voice', voices[0].id)
-#
-#     # ---
-#
-#     root = tk.Tk()
-#     queue = queue.Queue()
-#
-#     t = tk.Text()
-#     t.pack()
-#
-#     button = tk.Button(root, text='button', command=btn_press(queue))
-#     button.pack()
-#
-#     update_text()
-#
-#     task = threading.Thread(target=my_loop, args=(queue,)) # it has to be `,` in `(queue,)` to create tuple with one value
-#     task.start() # start thread
-#
-#     root.mainloop()
-#     task.join() # wait for end of thread
+    task.join()  # wait for end of thread
+    app.bind("<Destroy>", sys.exit(0))  # TODO: if user closes app, close voice recognition
