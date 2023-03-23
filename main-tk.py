@@ -287,8 +287,12 @@ class VideoPage(tk.Frame):
 
     def update_sources(self):
         # garbage collection
+        print("Garbage Collector")
         for widget in self.stream_widgets:
             widget.vid.running = False
+            widget.vid.__del__()
+            widget.destroy()
+            # run __del__
 
         self.stream_widgets.clear()
         print("updating to", app.selected_exercise)
