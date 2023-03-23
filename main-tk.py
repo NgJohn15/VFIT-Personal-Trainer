@@ -9,7 +9,7 @@ from tkinter.ttk import *
 import pygame
 from ttkthemes import ThemedTk
 from tkCamera import tkCamera
-
+from PIL import Image, ImageTk
 
 class VoiceThread(threading.Thread):
     def __init__(self, *args, **kwargs):
@@ -163,7 +163,9 @@ class WelcomePage(tk.Frame):
     def __init__(self, parent, controller):
         self.controller = controller
         tk.Frame.__init__(self, parent)
-        welcome_image = tk.PhotoImage(file="exercises\welcome_page.png")
+        image = Image.open("exercises/welcome_page.png")
+        temp_image = image.resize((self.winfo_screenwidth(), self.winfo_screenheight()))
+        welcome_image = ImageTk.PhotoImage(temp_image)
         # WelcomeButton
         welcome_btn = ttk.Button(self, image = welcome_image, compound="top", text="Welcome", command=lambda: self.welcome_button_pressed())
         # welcome_btn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed("arg"))
@@ -236,30 +238,34 @@ class ExercisePage(tk.Frame):
         backbtn = tk.Button(self, text="Go Back", command=lambda: app.change_page_to_n(SetupPage, ""), font=("Arial", 10), padx=30)
         backbtn.place(relx=0.01, rely=0.01, anchor='center', relheight=0.02, relwidth=0.025)
         
-        bicep_image = tk.PhotoImage(file="exercises\curls.png")
-        bicep_image = bicep_image.subsample(1, 1)
+        image = Image.open("exercises/curls.png")
+        temp_image = image.resize((self.winfo_screenwidth()//5, self.winfo_screenheight()//3))
+        bicep_image = ImageTk.PhotoImage(temp_image)
         bicep_btn = tk.Button(self, text="Bicep Curls", image = bicep_image, compound="top", command=lambda: self.select_exercise("bicep_curls"), font=("Arial", 40), pady=100)
         bicep_btn.image = bicep_image
         bicep_btn.place(relx=0.2, rely=0.5, anchor='center', relheight=0.62, relwidth=0.15)
         bicep_btn.configure(bg='white', fg='black')
         
-        lunges_image = tk.PhotoImage(file="exercises\lunges.png")
-        lunges_image = lunges_image.subsample(1, 1)
+        image = Image.open("exercises/lunges.png")
+        temp_image = image.resize((self.winfo_screenwidth()//5, self.winfo_screenheight()//3))
+        lunges_image = ImageTk.PhotoImage(temp_image)
         lunge_btn = tk.Button(self, text="Lunges", image = lunges_image, compound="top", command=lambda: self.select_exercise("lunges"), font=("Arial", 40), pady=100)
         lunge_btn.image = lunges_image
         lunge_btn.place(relx=0.4, rely=0.5, anchor='center', relheight=0.62, relwidth=0.15)
         lunge_btn.configure(bg='white', fg='black')
         
-        squats_image = tk.PhotoImage(file="exercises\squat.png")
-        squats_image = squats_image.subsample(1, 1)
+        image = Image.open("exercises/squat.png")
+        temp_image = image.resize((self.winfo_screenwidth()//7, self.winfo_screenheight()//3))
+        squats_image = ImageTk.PhotoImage(temp_image)
         squat_btn = tk.Button(self, text="Squats", image = squats_image, compound="top", command=lambda: self.select_exercise("squats"), font=("Arial", 40), pady=100)
         squat_btn.image = squats_image
         squat_btn.place(relx=0.6, rely=0.5, anchor='center', relheight=0.62, relwidth=0.15)
         squat_btn.configure(bg='white', fg='black')
         
-        jumping_image = tk.PhotoImage(file="exercises\jumping-jacks.png")
-        jumping_image = jumping_image.subsample(1, 1)
-        jumping_btn = tk.Button(self, text="Jumping Jacks", image = jumping_image, compound="top", command=lambda: self.select_exercise("jumping_jacks"), font=("Arial", 40), pady=100)
+        image = Image.open("exercises/jumping-jacks.png")
+        temp_image = image.resize((self.winfo_screenwidth()//5, self.winfo_screenheight()//3))
+        jumping_image = ImageTk.PhotoImage(temp_image)
+        jumping_btn = tk.Button(self, text="Jumping\nJacks", image = jumping_image, compound="top", command=lambda: self.select_exercise("jumping_jacks"), font=("Arial", 40), pady=100)
         jumping_btn.image = jumping_image
         jumping_btn.place(relx=0.8, rely=0.5, anchor='center', relheight=0.62, relwidth=0.15)
         jumping_btn.configure(bg='white', fg='black')
