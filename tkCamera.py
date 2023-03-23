@@ -8,43 +8,36 @@ import tkinter
 import tkinter.filedialog
 from videocapture import VideoCapture
 
-
 """TODO: add docstring"""
+
 
 class tkCamera(tkinter.Frame):
 
-    def __init__(self, parent, text="", source=0, width=None, height=None, sources=None, exercise_type = None):
+    def __init__(self, parent, text="", source=0, width=None, height=None, sources=None, exercise_type=None):
         """TODO: add docstring"""
 
         super().__init__(parent)
 
         self.source = source
-        self.width  = width
+        self.width = width
         self.height = height
         self.other_sources = sources
         self.exercise_type = exercise_type
 
-        #self.window.title(window_title)
-        self.vid = VideoCapture(self.source, self.width, self.height,exercise_type = self.exercise_type)
+        # self.window.title(window_title)
 
+        self.vid = VideoCapture(self.source, self.width, self.height, exercise_type=self.exercise_type)
 
         self.canvas = tkinter.Canvas(self, width=self.vid.width, height=self.vid.height)
         self.canvas.pack()
 
         # After it is called once, the update method will be automatically called every delay milliseconds
         # calculate delay using `FPS`
-        self.delay = int(1000/self.vid.fps)
-
-        #print('[tkCamera] source:', self.source)
-        #print('[tkCamera] fps:', self.vid.fps, 'delay:', self.delay)
-
+        self.delay = int(1000 / self.vid.fps)
         self.image = None
-
         self.dialog = None
-
         self.running = True
         self.update_frame()
-
 
     def update_frame(self):
         """TODO: add docstring"""
