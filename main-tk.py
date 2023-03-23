@@ -10,6 +10,7 @@ import pygame
 from ttkthemes import ThemedTk
 from tkCamera import tkCamera
 
+DEBUG = False
 
 class VoiceThread(threading.Thread):
     def __init__(self, *args, **kwargs):
@@ -27,7 +28,8 @@ class VoiceThread(threading.Thread):
 
 
 def speak(text):
-    print("TTS:", text)
+    if DEBUG:
+        print("TTS:", text)
     engine.say(text)
     engine.runAndWait()
 
@@ -36,19 +38,21 @@ def get_command():
     # it takes mic input from the user and return string output
     r = sr.Recognizer()
     with sr.Microphone() as source:
-        print("Listening...")
-        r.pause_threshold = 1
+        if DEBUG:
+            print("Listening...")
+        r.pause_threshold = 0.6
         audio = r.listen(source)
 
     try:
-        print("Recognizing..")
+        if DEBUG:
+            print("Recognizing..")
         query = r.recognize_google(audio, language='en-in')
-        print(f"user Said :{query}\n")
+        if DEBUG:
+            print(f"user Said :{query}\n")
 
     except Exception as e:
-        print(e)
-
-        print("Say that again please")
+        if DEBUG:
+            print(e)
         return "None"
 
     return query
@@ -173,10 +177,6 @@ class WelcomePage(tk.Frame):
     def welcome_button_pressed(self):
         app.change_page_to_n(SetupPage, "")
 
-    # function with arguments
-    # def welcome_button_pressed(self, arg):
-    #     print(arg)
-
 
 class SetupPage(tk.Frame):
     name = "Setup"
@@ -281,7 +281,6 @@ class VideoPage(tk.Frame):
 
     def update_sources(self):
         # garbage collection
-        print("Garbage Collector")
         for widget in self.stream_widgets:
             widget.vid.running = False
             widget.vid.__del__()
@@ -289,9 +288,9 @@ class VideoPage(tk.Frame):
             # run __del__
 
         self.stream_widgets.clear()
-        print("updating to", app.selected_exercise)
+        if DEBUG:
+            print("updating to", app.selected_exercise)
         for number, (text, source, exercise_type) in enumerate(self.get_sources(app.selected_exercise)):
-            print(source, exercise_type)
             widget = tkCamera(self, text, source, self.width, self.height, exercise_type=exercise_type)
             widget.grid(row=0, column=number)
             self.stream_widgets.append(widget)
@@ -330,4 +329,3 @@ if __name__ == "__main__":
     task.start()  # start thread
     app.mainloop()
     task.join()  # wait for end of thread
-    app.bind("<Destroy>", sys.exit(0))  # TODO: if user closes app, close voice recognition
