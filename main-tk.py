@@ -68,11 +68,11 @@ def my_loop():
                 speak("Try Go To Command again")
         elif 'go back' in query:
             app.change_to_previous()
-
-        elif 'welcome' in query:
-            app.change_page_to_n(SetupPage, "Setup")
-        elif 'ready' in query:
-            app.change_page_to_n(ExercisePage, 'Exercise Selection')
+        elif 'click on' in query:
+            if 'welcome button' in query and app.current_page == "Welcome":
+                app.change_page_to_n(SetupPage, "Setup")
+            elif 'ready button' in query and app.current_page == "Setup":
+                app.change_page_to_n(ExercisePage, "Exercise selection")
         elif 'exit program' in query:
             speak("exiting V-FIT PT")
             app.quit()
