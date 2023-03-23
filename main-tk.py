@@ -189,7 +189,6 @@ class WelcomePage(tk.Frame):
         # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
         welcomebtn.place(relx=.5, rely=.5, anchor='center', relheight=0.5, relwidth=0.5)
 
-
     
 class SetupPage(tk.Frame):
     def __init__(self, parent, controller):
@@ -203,23 +202,28 @@ class SetupPage(tk.Frame):
         micrecbtn = ttk.Button(self, text="Mic Recognition",command=lambda: takecommand())
         # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
         micrecbtn.place(relx=.7, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
-        def play_sound():
+        def play_sound(self):
             # Get the volume value from the slider
-            volume = volume_slider.get() / 100.0
+            new_volume = volume_slider.get()
+            snapped_value = int(round(float(new_volume) / 10)) * 10
+            
+            # print(snapped_value)
+            # print(new_volume)
             # Set the volume of the sound
-            sound.set_volume(volume)
+            sound.set_volume(snapped_value)
             # Play the sound
             sound.play()
+            
+            
         volume_slider = ttk.Scale(
             self,
             from_=0,
             to=100,
-            orient='horizontal')
-        volume_slider.set(50)
+            orient='horizontal',
+            command= play_sound)
+        
         volume_slider.get()
         volume_slider.place(relx=.6, rely=.5, anchor='center', relheight=0.2, relwidth=0.5)
-        play_button = ttk.Button(self, text="Play Sound", command=play_sound)
-        play_button.place(relx=.6, rely=.55, anchor='center', relheight=0.05, relwidth=0.05)
         
         text=Label(self, text = "Audio")
         text.config(font =("Courier", 14))
