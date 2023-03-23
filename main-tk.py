@@ -118,8 +118,8 @@ class WelcomePage(tk.Frame):
         self.controller = controller
         tk.Frame.__init__(self, parent)
         # WelcomeButton
-        # welcomebtn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed())
-        welcomebtn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed("arg"))
+        welcomebtn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed())
+        # welcomebtn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed("arg"))
         # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
         welcomebtn.place(relx=.5, rely=.5, anchor='center', relheight=0.5, relwidth=0.5)
 
@@ -127,8 +127,8 @@ class WelcomePage(tk.Frame):
         self.controller.show_frame(SetupPage)
 
     # function with arguments
-    def welcome_button_pressed(self, arg):
-        print(arg)
+    # def welcome_button_pressed(self, arg):
+    #     print(arg)
 
 
 class SetupPage(tk.Frame):
@@ -139,7 +139,7 @@ class SetupPage(tk.Frame):
         # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
         setupbtn.place(relx=.3, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
         pygame.mixer.init()  # todo no volume
-        sound = pygame.mixer.Sound("ding.wav")
+        sound = pygame.mixer.Sound("sounds/ding.wav")
         micrecbtn = ttk.Button(self, text="Mic Recognition", command=lambda: takecommand())
         # label = ttk.Label(self, text="Startpage", font=LARGEFONT)
         micrecbtn.place(relx=.7, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
@@ -176,7 +176,7 @@ class SetupPage(tk.Frame):
 class ExcercisePage(tk.Frame):
 
     def __init__(self, parent, controller):
-        bicep = tk.PhotoImage(file='bicep-clipart-11.png')
+        bicep = tk.PhotoImage(file='exercises/bicep-clipart-11.png')
         tk.Frame.__init__(self, parent)
         bicepbtn = ttk.Button(self, text="Bicep", command=lambda: controller.show_frame(VideoPage))
         bicepbtn.place(relx=0.2, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
