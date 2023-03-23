@@ -8,6 +8,21 @@ from tkinter import *
 from tkinter.ttk import *
 import pygame
 
+from tkCamera import tkCamera
+
+
+# def get_sources():
+#     sources = [  # (text, source)
+#         # local webcams
+#         ("me", 0, app.selected_exercise),
+#         # remote videos (or streams)
+#         (
+#             "Zakopane, Poland",
+#             "./exercises/" + app.selected_exercise + ".mp4", "None"
+#         ),
+#     ]
+#     return sources
+
 
 class VoiceThread(threading.Thread):
     def __init__(self, *args, **kwargs):
@@ -82,6 +97,7 @@ def my_loop():
 class VFITApp(tk.Tk):
     current_page = ""
     previous_page = ""
+    selected_exercise = "bicep_curls"
 
     # __init__ function for class tkinterApp
     def __init__(self, *args, **kwargs):
@@ -245,7 +261,44 @@ class VideoPage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.stream_widgets = []
+
         # insert video feed and ref video
+        exercise = 'bicep_curls'
+        # HARDCODE TODO: Dynamically update sources
+        sources = [  # (text, source)
+            # local webcams
+            ("me", 0, exercise),
+            # remote videos (or streams)
+            (
+                "Zakopane, Poland",
+                "./exercises/" + exercise + ".mp4", "None"
+            ),
+        ]
+
+        width = self.winfo_screenwidth()//2
+        height = self.winfo_screenheight()
+        print(width, height)
+
+        columns = 2
+        for number, (text, source, exercise_type) in enumerate(sources):
+            widget = tkCamera(self, text, source, width, height, exercise_type=exercise_type)
+            row = number // columns
+            col = number % columns
+            widget.grid(row=row, column=col)
+            self.stream_widgets.append(widget)
+
+        # self.parent.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+    def on_closing(self, event=None):
+        """TODO: add docstring"""
+
+        print("[App] stoping threads")
+        for widget in self.stream_widgets:
+            widget.vid.running = False
+
+        print("[App] exit")
+        self.parent.destroy()
 
 
 if __name__ == "__main__":
