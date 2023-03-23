@@ -163,10 +163,12 @@ class WelcomePage(tk.Frame):
     def __init__(self, parent, controller):
         self.controller = controller
         tk.Frame.__init__(self, parent)
+        welcome_image = tk.PhotoImage(file="exercises\welcome_page.png")
         # WelcomeButton
-        welcome_btn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed())
+        welcome_btn = ttk.Button(self, image = welcome_image, compound="top", text="Welcome", command=lambda: self.welcome_button_pressed())
         # welcome_btn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed("arg"))
-        welcome_btn.place(relx=.5, rely=.5, anchor='center', relheight=0.5, relwidth=0.5)
+        welcome_btn.image = welcome_image
+        welcome_btn.place(relx=.5, rely=.5, anchor='center', relheight=1, relwidth=1)
 
     def welcome_button_pressed(self):
         app.change_page_to_n(SetupPage, "")
@@ -181,13 +183,13 @@ class SetupPage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.configure(bg='black')
         # WelcomeButton
-        mic_test_btn = ttk.Button(self, text="Mic Test", command=lambda: self.mic_test())
-        mic_test_btn.place(relx=.3, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
+        backbtn = tk.Button(self, text="Go Back", command=lambda: app.change_page_to_n(WelcomePage, ""), font=("Arial", 10), padx=30)
+        backbtn.place(relx=0.01, rely=0.01, anchor='center', relheight=0.02, relwidth=0.025)
         pygame.mixer.init()  # todo no volume
         sound = pygame.mixer.Sound("sounds/ding.wav")
-        mic_rec_btn = ttk.Button(self, text="Mic Recognition", command=lambda: get_command())
-        mic_rec_btn.place(relx=.7, rely=.15, anchor='center', relheight=0.2, relwidth=0.3)
+        
 
         def play_sound(self):
             # Get the volume value from the slider
@@ -197,7 +199,7 @@ class SetupPage(tk.Frame):
             # print(snapped_value)
             # print(new_volume)
             # Set the volume of the sound
-            sound.set_volume(snapped_value)
+            sound.set_volume(new_volume)
             # Play the sound
             sound.play()
 
@@ -209,13 +211,16 @@ class SetupPage(tk.Frame):
             command=play_sound)
 
         volume_slider.get()
-        volume_slider.place(relx=.6, rely=.5, anchor='center', relheight=0.2, relwidth=0.5)
+        volume_slider.place(relx=.6, rely=.5, anchor='center', relheight=0.05, relwidth=0.5)
 
         text = Label(self, text="Audio")
         text.config(font=("Courier", 14))
-        text.place(relx=.2, rely=.5, anchor='center', relheight=0.1, relwidth=0.1)
+        text.place(relx=.25, rely=.5, anchor='center', relheight=0.1, relwidth=0.04)
+        
+        mic_rec_btn = ttk.Button(self, text="Mic Recognition", command=lambda: get_command())
+        mic_rec_btn.place(relx=.3, rely=.75, anchor='center', relheight=0.2, relwidth=0.3)
         ready_btn = ttk.Button(self, text="Ready !", command=lambda: app.change_page_to_n(ExercisePage, ""))
-        ready_btn.place(relx=.5, rely=.75, anchor='center', relheight=0.2, relwidth=0.4)
+        ready_btn.place(relx=.7, rely=.75, anchor='center', relheight=0.2, relwidth=0.3)
 
     def mic_test(self):
         speak("Listening")
@@ -226,19 +231,38 @@ class ExercisePage(tk.Frame):
     name = "Exercise"
 
     def __init__(self, parent, controller):
-        bicep = tk.PhotoImage(file='exercises/bicep-clipart-11.png')
         tk.Frame.__init__(self, parent)
-        bicep_btn = ttk.Button(self, text="Bicep", command=lambda: self.select_exercise("bicep_curls"))
-        bicep_btn.place(relx=0.2, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
-
-        lunge_btn = ttk.Button(self, text="Lunge", command=lambda: self.select_exercise("lunges"))
-        lunge_btn.place(relx=0.4, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
-
-        squat_btn = ttk.Button(self, text="Squat", command=lambda: self.select_exercise("squats"))
-        squat_btn.place(relx=0.6, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
-
-        jumping_btn = ttk.Button(self, text="Jumping", command=lambda: self.select_exercise("jumping_jacks"))
-        jumping_btn.place(relx=0.8, rely=0.5, anchor='center', relheight=0.75, relwidth=0.15)
+        self.configure(bg='black')
+        backbtn = tk.Button(self, text="Go Back", command=lambda: app.change_page_to_n(SetupPage, ""), font=("Arial", 10), padx=30)
+        backbtn.place(relx=0.01, rely=0.01, anchor='center', relheight=0.02, relwidth=0.025)
+        
+        bicep_image = tk.PhotoImage(file="exercises\curls.png")
+        bicep_image = bicep_image.subsample(1, 1)
+        bicep_btn = tk.Button(self, text="Bicep Curls", image = bicep_image, compound="top", command=lambda: self.select_exercise("bicep_curls"), font=("Arial", 40), pady=100)
+        bicep_btn.image = bicep_image
+        bicep_btn.place(relx=0.2, rely=0.5, anchor='center', relheight=0.62, relwidth=0.15)
+        bicep_btn.configure(bg='white', fg='black')
+        
+        lunges_image = tk.PhotoImage(file="exercises\lunges.png")
+        lunges_image = lunges_image.subsample(1, 1)
+        lunge_btn = tk.Button(self, text="Lunges", image = lunges_image, compound="top", command=lambda: self.select_exercise("lunges"), font=("Arial", 40), pady=100)
+        lunge_btn.image = lunges_image
+        lunge_btn.place(relx=0.4, rely=0.5, anchor='center', relheight=0.62, relwidth=0.15)
+        lunge_btn.configure(bg='white', fg='black')
+        
+        squats_image = tk.PhotoImage(file="exercises\squat.png")
+        squats_image = squats_image.subsample(1, 1)
+        squat_btn = tk.Button(self, text="Squats", image = squats_image, compound="top", command=lambda: self.select_exercise("squats"), font=("Arial", 40), pady=100)
+        squat_btn.image = squats_image
+        squat_btn.place(relx=0.6, rely=0.5, anchor='center', relheight=0.62, relwidth=0.15)
+        squat_btn.configure(bg='white', fg='black')
+        
+        jumping_image = tk.PhotoImage(file="exercises\jumping-jacks.png")
+        jumping_image = jumping_image.subsample(1, 1)
+        jumping_btn = tk.Button(self, text="Jumping Jacks", image = jumping_image, compound="top", command=lambda: self.select_exercise("jumping_jacks"), font=("Arial", 40), pady=100)
+        jumping_btn.image = jumping_image
+        jumping_btn.place(relx=0.8, rely=0.5, anchor='center', relheight=0.62, relwidth=0.15)
+        jumping_btn.configure(bg='white', fg='black')
 
     def select_exercise(self, exercise_name):
         app.change_page_to_n(VideoPage, "")
