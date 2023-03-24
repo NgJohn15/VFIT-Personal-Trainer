@@ -173,13 +173,10 @@ class WelcomePage(tk.Frame):
         welcome_image = ImageTk.PhotoImage(temp_image)
         # WelcomeButton
         welcome_btn = tk.Button(self, image=welcome_image, compound="top", text="Welcome",
-                                command=lambda: self.welcome_button_pressed())
+                                command=lambda: app.change_page_to_n(SetupPage, ""))
         # welcome_btn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed("arg"))
         welcome_btn.image = welcome_image
         welcome_btn.place(relx=.5, rely=.5, anchor='center', relheight=1, relwidth=1)
-
-    def welcome_button_pressed(self):
-        app.change_page_to_n(SetupPage, "")
 
 
 class SetupPage(tk.Frame):
