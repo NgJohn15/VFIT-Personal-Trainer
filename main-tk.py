@@ -187,7 +187,7 @@ class SetupPage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        self.configure(bg='black')
+        self.configure(bg='white')
         # WelcomeButton
         backbtn = tk.Button(self, text="Go Back", command=lambda: app.change_page_to_n(WelcomePage, ""),
                             font=("Arial", 10), padx=30)
@@ -197,7 +197,7 @@ class SetupPage(tk.Frame):
 
         def play_sound(self):
             # Get the volume value from the slider
-            new_volume = volume_slider.get()
+            new_volume = volume_slider.get()/250
             snapped_value = int(round(float(new_volume) / 10)) * 10
 
             # print(snapped_value)
@@ -213,12 +213,13 @@ class SetupPage(tk.Frame):
             to=100,
             orient='horizontal',
             command=play_sound)
-
+        
+        volume_slider.set(0)
         volume_slider.get()
         volume_slider.place(relx=.6, rely=.5, anchor='center', relheight=0.05, relwidth=0.5)
 
         image = Image.open("exercises/volume_zero.png")
-        temp_image = image.resize((self.winfo_screenwidth() // 20, self.winfo_screenheight() // 15))
+        temp_image = image.resize((self.winfo_screenwidth() // 20, self.winfo_screenheight() // 17))
         volume_down_image = ImageTk.PhotoImage(temp_image)
         volume_zero_btn = tk.Button(self, image=volume_down_image, compound="top",
                                     command=lambda: volume_slider.set(0))
@@ -235,9 +236,9 @@ class SetupPage(tk.Frame):
         volume_full_btn.place(relx=0.9, rely=0.5, anchor='center', relheight=0.06, relwidth=0.05)
         volume_full_btn.configure(bg='white', fg='black')
 
-        text = Label(self, text="Audio")
+        text = Label(self, text="System Volume")
         text.config(font=("Courier", 14))
-        text.place(relx=.15, rely=.5, anchor='center', relheight=0.045, relwidth=0.03)
+        text.place(relx=.15, rely=.5, anchor='center', relheight=0.045, relwidth=0.0775)
 
         mic_rec_btn = tk.Button(self, text="Mic Recognition", command=lambda: get_command(), font=("Arial", 40))
         mic_rec_btn.place(relx=.3, rely=.75, anchor='center', relheight=0.2, relwidth=0.3)
@@ -255,7 +256,7 @@ class ExercisePage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        self.configure(bg='black')
+        self.configure(bg='white')
         backbtn = tk.Button(self, text="Go Back", command=lambda: app.change_page_to_n(SetupPage, ""),
                             font=("Arial", 10), padx=30)
         backbtn.place(relx=0.016, rely=0.01, anchor='center', relheight=0.02, relwidth=0.03)
