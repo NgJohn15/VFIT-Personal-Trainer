@@ -194,7 +194,7 @@ class SetupPage(tk.Frame):
         # WelcomeButton
         backbtn = tk.Button(self, text="Go Back", command=lambda: app.change_page_to_n(WelcomePage, ""),
                             font=("Arial", 10), padx=30)
-        backbtn.place(relx=0.01, rely=0.01, anchor='center', relheight=0.02, relwidth=0.025)
+        backbtn.place(relx=0.016, rely=0.01, anchor='center', relheight=0.02, relwidth=0.03)
         pygame.mixer.init()  # todo no volume
         sound = pygame.mixer.Sound("sounds/ding.wav")
 
@@ -220,13 +220,31 @@ class SetupPage(tk.Frame):
         volume_slider.get()
         volume_slider.place(relx=.6, rely=.5, anchor='center', relheight=0.05, relwidth=0.5)
 
+        image = Image.open("exercises/volume_zero.png")
+        temp_image = image.resize((self.winfo_screenwidth() // 20, self.winfo_screenheight() // 15))
+        volume_down_image = ImageTk.PhotoImage(temp_image)
+        volume_zero_btn = tk.Button(self, image=volume_down_image, compound="top",
+                              command=lambda: volume_slider.set(0))
+        volume_zero_btn.image = volume_down_image
+        volume_zero_btn.place(relx=0.3, rely=0.5, anchor='center', relheight=0.06, relwidth=0.05)
+        volume_zero_btn.configure(bg='white', fg='black')
+        
+        image = Image.open("exercises/volume_full.png")
+        temp_image = image.resize((self.winfo_screenwidth() // 23, self.winfo_screenheight() // 18))
+        volume_up_image = ImageTk.PhotoImage(temp_image)
+        volume_full_btn = tk.Button(self, image=volume_up_image, compound="top",
+                              command=lambda: volume_slider.set(100))
+        volume_full_btn.image = volume_up_image
+        volume_full_btn.place(relx=0.9, rely=0.5, anchor='center', relheight=0.06, relwidth=0.05)
+        volume_full_btn.configure(bg='white', fg='black')
+
         text = Label(self, text="Audio")
         text.config(font=("Courier", 14))
-        text.place(relx=.25, rely=.5, anchor='center', relheight=0.1, relwidth=0.04)
+        text.place(relx=.15, rely=.5, anchor='center', relheight=0.045, relwidth=0.03)
 
-        mic_rec_btn = ttk.Button(self, text="Mic Recognition", command=lambda: get_command())
+        mic_rec_btn = tk.Button(self, text="Mic Recognition", command=lambda: get_command(), font=("Arial", 40))
         mic_rec_btn.place(relx=.3, rely=.75, anchor='center', relheight=0.2, relwidth=0.3)
-        ready_btn = ttk.Button(self, text="Ready !", command=lambda: app.change_page_to_n(ExercisePage, ""))
+        ready_btn = tk.Button(self, text="Ready !", command=lambda: app.change_page_to_n(ExercisePage, ""), font=("Arial", 40))
         ready_btn.place(relx=.7, rely=.75, anchor='center', relheight=0.2, relwidth=0.3)
 
     def mic_test(self):
@@ -242,7 +260,7 @@ class ExercisePage(tk.Frame):
         self.configure(bg='black')
         backbtn = tk.Button(self, text="Go Back", command=lambda: app.change_page_to_n(SetupPage, ""),
                             font=("Arial", 10), padx=30)
-        backbtn.place(relx=0.01, rely=0.01, anchor='center', relheight=0.02, relwidth=0.025)
+        backbtn.place(relx=0.016, rely=0.01, anchor='center', relheight=0.02, relwidth=0.03)
 
         image = Image.open("exercises/curls.png")
         temp_image = image.resize((self.winfo_screenwidth() // 5, self.winfo_screenheight() // 3))
