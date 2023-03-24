@@ -200,7 +200,7 @@ class SetupPage(tk.Frame):
 
         def play_sound(self):
             # Get the volume value from the slider
-            new_volume = volume_slider.get()
+            new_volume = volume_slider.get()/500
             snapped_value = int(round(float(new_volume) / 10)) * 10
 
             # print(snapped_value)
@@ -238,9 +238,9 @@ class SetupPage(tk.Frame):
         volume_full_btn.place(relx=0.9, rely=0.5, anchor='center', relheight=0.06, relwidth=0.05)
         volume_full_btn.configure(bg='white', fg='black')
 
-        text = Label(self, text="Audio")
+        text = Label(self, text="System Volume")
         text.config(font=("Courier", 14))
-        text.place(relx=.15, rely=.5, anchor='center', relheight=0.045, relwidth=0.03)
+        text.place(relx=.15, rely=.5, anchor='center', relheight=0.045, relwidth=0.0775)
 
         mic_rec_btn = tk.Button(self, text="Mic Recognition", command=lambda: get_command(), font=("Arial", 40))
         mic_rec_btn.place(relx=.3, rely=.75, anchor='center', relheight=0.2, relwidth=0.3)
