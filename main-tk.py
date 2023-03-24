@@ -190,7 +190,7 @@ class SetupPage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        self.configure(bg='black')
+        self.configure(bg='white')
         # WelcomeButton
         backbtn = tk.Button(self, text="Go Back", command=lambda: app.change_page_to_n(WelcomePage, ""),
                             font=("Arial", 10), padx=30)
@@ -257,7 +257,7 @@ class ExercisePage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        self.configure(bg='black')
+        self.configure(bg='white')
         backbtn = tk.Button(self, text="Go Back", command=lambda: app.change_page_to_n(SetupPage, ""),
                             font=("Arial", 10), padx=30)
         backbtn.place(relx=0.016, rely=0.01, anchor='center', relheight=0.02, relwidth=0.03)
