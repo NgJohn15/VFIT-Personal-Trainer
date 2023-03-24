@@ -63,7 +63,7 @@ def my_loop():
     while True:
         query = get_command().lower()
 
-        # Logic for executing task based query
+        # GO TO --> PAGE
         if 'go to' in query:
             if 'welcome page' in query:
                 app.change_page_to_n(WelcomePage, "Changing to Welcome Page")
@@ -72,19 +72,48 @@ def my_loop():
             elif 'exercise selection' in query:
                 app.change_page_to_n(ExercisePage, "Changing to Exercise Selection")
             else:
-                speak("Try Go To Command again")
+                speak("I didn't understand that GO TO command")
         elif 'go back' in query:
             app.change_to_previous()
+
+        # exit
+        elif 'kill the program' in query:
+            speak("exiting V-FIT PT")
+            app.destroy()
+            break  # exit loop and thread will end
+
+        # CLICK ON --> BTN
         elif 'click on' in query:
             if 'welcome button' in query and app.current_page == "Welcome":
                 app.change_page_to_n(SetupPage, "Setup")
             elif 'ready button' in query and app.current_page == "Setup":
                 app.change_page_to_n(ExercisePage, "Exercise selection")
-        elif 'exit program' in query:
-            speak("exiting V-FIT PT")
-            app.destroy()
-            break  # exit loop and thread will end
+            else:
+                speak("I'm not sure what you want to click on")
 
+        elif app.current_page == "Setup" and "ready" in query:
+            app.change_page_to_n(ExercisePage, "Pick an exercise to begin!")
+
+        elif app.current_page == "Welcome" and "let's begin" in query:
+            app.change_page_to_n(SetupPage, "Starting with setup")
+
+        elif app.current_page == "Exercise":
+            # exercise selection
+            if 'bicep curls' in query:
+                speak("Let's do some curls!")
+                app.frames[ExercisePage].select_exercise('bicep_curls')
+            elif 'lunges' in query:
+                speak("Here we go!")
+                app.frames[ExercisePage].select_exercise('lunges')
+            elif 'squats' in query:
+                speak("Let's go!")
+                app.frames[ExercisePage].select_exercise('squats')
+            elif 'jumping jacks' in query:
+                speak("Let's get to it!")
+                app.frames[ExercisePage].select_exercise('jumping_jacks')
+        elif app.current_page == "Video":
+            if 'exit' in query or "another exercise" in query:
+                app.change_page_to_n(ExercisePage, 'Pick or say an exercise to begin!')
     exit(0)
 
 
@@ -237,7 +266,7 @@ class SetupPage(tk.Frame):
         text.config(font=("Courier", 14))
         text.place(relx=.15, rely=.5, anchor='center', relheight=0.045, relwidth=0.0775)
 
-        mic_rec_btn = tk.Button(self, text="Mic Recognition", command=lambda: get_command(), font=("Arial", 40))
+        mic_rec_btn = tk.Button(self, text="Mic Recognition", command=lambda: self.mic_test(), font=("Arial", 40))
         mic_rec_btn.place(relx=.3, rely=.75, anchor='center', relheight=0.2, relwidth=0.3)
         ready_btn = tk.Button(self, text="Ready !", command=lambda: app.change_page_to_n(ExercisePage, ""),
                               font=("Arial", 40))
@@ -298,6 +327,7 @@ class ExercisePage(tk.Frame):
         app.change_page_to_n(VideoPage, "")
         app.selected_exercise = exercise_name
         app.frames[VideoPage].update_sources()
+        speak("Try to follow the reference video on the right")
 
 
 class VideoPage(tk.Frame):
