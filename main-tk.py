@@ -31,8 +31,11 @@ class VoiceThread(threading.Thread):
 def speak(text):
     if DEBUG:
         print("TTS:", text)
-    engine.say(text)
-    engine.runAndWait()
+    try:
+        engine.say(text)
+        engine.runAndWait()
+    except:
+        pass
 
 
 def get_command():
@@ -119,6 +122,15 @@ def my_loop():
     exit(0)
 
 
+def clean_video():
+        # garbage collection
+    for widget in app.frames[VideoPage].stream_widgets:
+        widget.vid.running = False
+        widget.vid.__del__()
+        widget.destroy()
+
+    app.frames[VideoPage].stream_widgets.clear()
+
 class VFITApp(ThemedTk):
     current_page = ""
     previous_page = ""
@@ -204,6 +216,11 @@ class VFITApp(ThemedTk):
         # Update App Data
         app.previous_page = app.current_page
         app.current_page = page.name
+
+
+        # perform garbage collection
+        if app.previous_page == 'Video':
+            clean_video()
 
         self.show_frame(page)
         speak(msg)
