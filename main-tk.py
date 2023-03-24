@@ -175,7 +175,7 @@ class WelcomePage(tk.Frame):
         temp_image = image.resize((self.winfo_screenwidth(), self.winfo_screenheight()))
         welcome_image = ImageTk.PhotoImage(temp_image)
         # WelcomeButton
-        welcome_btn = ttk.Button(self, image=welcome_image, compound="top", text="Welcome",
+        welcome_btn = tk.Button(self, image=welcome_image, compound="top", text="Welcome",
                                  command=lambda: self.welcome_button_pressed())
         # welcome_btn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed("arg"))
         welcome_btn.image = welcome_image
