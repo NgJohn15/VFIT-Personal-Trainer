@@ -12,7 +12,8 @@ from videocapture import VideoCapture
 
 
 class tkCamera(tkinter.Frame):
-
+    parent_app = None
+    counter = 0
     def __init__(self, parent, text="", source=0, width=None, height=None, sources=None, exercise_type=None):
         """TODO: add docstring"""
 
@@ -39,6 +40,10 @@ class tkCamera(tkinter.Frame):
         self.running = True
         self.update_frame()
 
+    def set_app(self,app):
+        self.parent_app = app
+
+
     def update_frame(self):
         """TODO: add docstring"""
 
@@ -46,11 +51,14 @@ class tkCamera(tkinter.Frame):
 
         # Get a frame from the video source
         ret, frame = self.vid.get_frame()
-
         if ret:
+            self.counter += 1
             self.image = frame
             self.photo = PIL.ImageTk.PhotoImage(image=self.image)
             self.canvas.create_image(0, 0, image=self.photo, anchor='nw')
+
+            if self.counter % 20 == 0:
+                self.parent_app.gamification_data(self.vid.get_data())
 
         if self.running:
             self.after(self.delay, self.update_frame)

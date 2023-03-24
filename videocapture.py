@@ -61,6 +61,13 @@ class VideoCapture:
         self.thread = threading.Thread(target=self.process)
         self.thread.start()
 
+    exercise_state = None
+    exercise_counter = 0
+    feedback = None
+
+    def get_data(self):
+        return [self.exercise_state,self.exercise_counter,self.feedback]
+
     def process(self):
         """TODO: add docstring"""
         if self.video_source == 0:
@@ -148,9 +155,6 @@ class VideoCapture:
                 min_detection_confidence=0.5,
                 min_tracking_confidence=0.5) as pose:
 
-                exercise_state = None
-                exercise_counter = 0
-
                 prev_frame_time = 0
                 new_frame_time = 0
                 start_time = 0
@@ -180,6 +184,7 @@ class VideoCapture:
                             landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
 
                         if results.pose_landmarks != None:
+                            self.feedback = "None"
                             # INTER_CUBIC interpolation
                             frame = cv2.resize(frame, (1920, 1080),
                                             interpolation=cv2.INTER_CUBIC)
@@ -202,27 +207,30 @@ class VideoCapture:
                                 
                             if self.exercise_type == "bicep_curls":
                                 if (joints[13].visibility > 0.9 and joints[14].visibility > 0.9):
-                                    print_text(
-                                        "Please turn to one of your sides!", frame)
-                                exercise_state, exercise_counter = bicep_curls(
-                                    joints, angles_arr, exercise_state, exercise_counter)
+                                    '''print_text(
+                                        "Please turn to one of your sides!", frame)'''
+                                    self.feedback = "Please turn to one of your sides!"
+                                self.exercise_state, self.exercise_counter = bicep_curls(
+                                    joints, angles_arr, self.exercise_state, self.exercise_counter)
                             elif self.exercise_type == "squats":
                                 if (joints[26].visibility > 0.9 and joints[25].visibility > 0.9):
-                                    print_text(
-                                        "Please turn to one of your sides!", frame)
-                                exercise_state, exercise_counter = squats(
-                                    joints, angles_arr, exercise_state, exercise_counter)
+                                    '''print_text(
+                                        "Please turn to one of your sides!", frame)'''
+                                    self.feedback = "Please turn to one of your sides!"
+                                self.exercise_state, self.exercise_counter = squats(
+                                    joints, angles_arr, self.exercise_state, self.exercise_counter)
                             elif self.exercise_type == "lunges":
-                                exercise_state, exercise_counter = lunges(
-                                    joints, angles_arr, exercise_state, exercise_counter)
+                                self.exercise_state, self.exercise_counter = lunges(
+                                    joints, angles_arr, self.exercise_state, self.exercise_counter)
                             elif self.exercise_type == "jumping_jacks":
-                                exercise_state, exercise_counter = jumping_jacks(
-                                    joints, angles_arr, exercise_state, exercise_counter)                    
+                                self.exercise_state, self.exercise_counter = jumping_jacks(
+                                    joints, angles_arr, self.exercise_state, self.exercise_counter)                    
 
                         else:
-                            frame = np.zeros((1080, 960, 3), np.uint8)
-                            print_text(
-                                "please stand in the center of the frame!", frame)
+                            #frame = np.zeros((1080, 960, 3), np.uint8)
+                            '''print_text(
+                                "please stand in the center of the frame!", frame)'''
+                            self.feedback = "please stand in the center of the frame!"
 
                         new_frame_time = time.time()
                         fps = 1/(new_frame_time-prev_frame_time)
@@ -235,11 +243,13 @@ class VideoCapture:
                         # by using putText function
                         fps = str(fps)
 
+                        self.get_data()
+
                         cv2.putText(frame, text="FPS: " + fps, org=(0, 30),
                                     fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(0, 255, 0), thickness=1)
-                        cv2.putText(frame, text=exercise_state, org=(
+                        cv2.putText(frame, text=self.exercise_state, org=(
                             850, 30), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(255, 0, 0), thickness=1)
-                        cv2.putText(frame, text="Rep: " + str(exercise_counter), org=(
+                        cv2.putText(frame, text="Rep: " + str(self.exercise_counter), org=(
                             720, 30), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(255, 0, 0), thickness=1)
 
                         frame = cv2.resize(frame, (self.width, self.height))
