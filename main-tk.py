@@ -200,7 +200,7 @@ class SetupPage(tk.Frame):
 
         def play_sound(self):
             # Get the volume value from the slider
-            new_volume = volume_slider.get()/500
+            new_volume = volume_slider.get()/250
             snapped_value = int(round(float(new_volume) / 10)) * 10
 
             # print(snapped_value)
@@ -216,12 +216,13 @@ class SetupPage(tk.Frame):
             to=100,
             orient='horizontal',
             command=play_sound)
-
+        
+        volume_slider.set(0)
         volume_slider.get()
         volume_slider.place(relx=.6, rely=.5, anchor='center', relheight=0.05, relwidth=0.5)
 
         image = Image.open("exercises/volume_zero.png")
-        temp_image = image.resize((self.winfo_screenwidth() // 20, self.winfo_screenheight() // 15))
+        temp_image = image.resize((self.winfo_screenwidth() // 20, self.winfo_screenheight() // 17))
         volume_down_image = ImageTk.PhotoImage(temp_image)
         volume_zero_btn = tk.Button(self, image=volume_down_image, compound="top",
                               command=lambda: volume_slider.set(0))
