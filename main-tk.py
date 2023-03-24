@@ -11,7 +11,7 @@ from ttkthemes import ThemedTk
 from tkCamera import tkCamera
 from PIL import Image, ImageTk
 
-DEBUG = False
+DEBUG = True
 
 
 class VoiceThread(threading.Thread):
@@ -83,8 +83,10 @@ def my_loop():
                 app.change_page_to_n(ExercisePage, "Exercise selection")
         elif 'exit program' in query:
             speak("exiting V-FIT PT")
-            app.quit()
+            app.destroy()
             break  # exit loop and thread will end
+
+    exit(0)
 
 
 class VFITApp(ThemedTk):
@@ -297,9 +299,7 @@ class VideoPage(tk.Frame):
         # garbage collection
         for widget in self.stream_widgets:
             widget.vid.running = False
-            widget.vid.__del__()
             widget.destroy()
-            # run __del__
 
         self.stream_widgets.clear()
         if DEBUG:
@@ -308,17 +308,6 @@ class VideoPage(tk.Frame):
             widget = tkCamera(self, text, source, self.width, self.height, exercise_type=exercise_type)
             widget.grid(row=0, column=number)
             self.stream_widgets.append(widget)
-
-    # TODO: Get on_closing to work on window shutdown
-    def on_closing(self, event=None):
-        """TODO: add docstring"""
-
-        print("[App] stopping threads")
-        for widget in self.stream_widgets:
-            widget.vid.running = False
-
-        print("[App] exit")
-        self.parent.destroy()
 
     def get_sources(self, exercise):
         sources = [  # (text, source)
