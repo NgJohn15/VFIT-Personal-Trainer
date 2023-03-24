@@ -1,4 +1,3 @@
-import sys
 import pyttsx3
 import speech_recognition as sr
 import threading
@@ -94,6 +93,7 @@ class VFITApp(ThemedTk):
     previous_page = ""
     selected_exercise = "bicep_curls"
     volume = 50
+    voice_thread = None
 
     # __init__ function for class tkinterApp
     def __init__(self, *args, **kwargs):
@@ -161,9 +161,6 @@ class VFITApp(ThemedTk):
         elif app.previous_page == 'Video':
             self.change_page_to_n(VideoPage, msg)
 
-    def end_fullscreen(self):
-        self.attributes("-fullscreen", False)
-
 
 class WelcomePage(tk.Frame):
     name = "Welcome"
@@ -176,7 +173,7 @@ class WelcomePage(tk.Frame):
         welcome_image = ImageTk.PhotoImage(temp_image)
         # WelcomeButton
         welcome_btn = tk.Button(self, image=welcome_image, compound="top", text="Welcome",
-                                 command=lambda: self.welcome_button_pressed())
+                                command=lambda: self.welcome_button_pressed())
         # welcome_btn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed("arg"))
         welcome_btn.image = welcome_image
         welcome_btn.place(relx=.5, rely=.5, anchor='center', relheight=1, relwidth=1)
@@ -224,16 +221,16 @@ class SetupPage(tk.Frame):
         temp_image = image.resize((self.winfo_screenwidth() // 20, self.winfo_screenheight() // 15))
         volume_down_image = ImageTk.PhotoImage(temp_image)
         volume_zero_btn = tk.Button(self, image=volume_down_image, compound="top",
-                              command=lambda: volume_slider.set(0))
+                                    command=lambda: volume_slider.set(0))
         volume_zero_btn.image = volume_down_image
         volume_zero_btn.place(relx=0.3, rely=0.5, anchor='center', relheight=0.06, relwidth=0.05)
         volume_zero_btn.configure(bg='white', fg='black')
-        
+
         image = Image.open("exercises/volume_full.png")
         temp_image = image.resize((self.winfo_screenwidth() // 23, self.winfo_screenheight() // 18))
         volume_up_image = ImageTk.PhotoImage(temp_image)
         volume_full_btn = tk.Button(self, image=volume_up_image, compound="top",
-                              command=lambda: volume_slider.set(100))
+                                    command=lambda: volume_slider.set(100))
         volume_full_btn.image = volume_up_image
         volume_full_btn.place(relx=0.9, rely=0.5, anchor='center', relheight=0.06, relwidth=0.05)
         volume_full_btn.configure(bg='white', fg='black')
@@ -244,7 +241,8 @@ class SetupPage(tk.Frame):
 
         mic_rec_btn = tk.Button(self, text="Mic Recognition", command=lambda: get_command(), font=("Arial", 40))
         mic_rec_btn.place(relx=.3, rely=.75, anchor='center', relheight=0.2, relwidth=0.3)
-        ready_btn = tk.Button(self, text="Ready !", command=lambda: app.change_page_to_n(ExercisePage, ""), font=("Arial", 40))
+        ready_btn = tk.Button(self, text="Ready !", command=lambda: app.change_page_to_n(ExercisePage, ""),
+                              font=("Arial", 40))
         ready_btn.place(relx=.7, rely=.75, anchor='center', relheight=0.2, relwidth=0.3)
 
     def mic_test(self):
@@ -317,6 +315,7 @@ class VideoPage(tk.Frame):
         # garbage collection
         for widget in self.stream_widgets:
             widget.vid.running = False
+            widget.vid.__del__()
             widget.destroy()
 
         self.stream_widgets.clear()
@@ -344,9 +343,10 @@ if __name__ == "__main__":
     engine = pyttsx3.init('sapi5')  # Windows
     voices = engine.getProperty('voices')
     engine.setProperty('voice', voices[0].id)
-    app = VFITApp()
+
     # run voice recognition thread
     task = threading.Thread(target=my_loop, args=())  # it has to be `,` in `(queue,)` to create tuple with one value
+    app = VFITApp()
     task.start()  # start thread
     app.mainloop()
     task.join()  # wait for end of thread
