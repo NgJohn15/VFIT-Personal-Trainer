@@ -123,7 +123,7 @@ def my_loop():
 
 
 def clean_video():
-        # garbage collection
+    # garbage collection
     for widget in app.frames[VideoPage].stream_widgets:
         widget.vid.running = False
         widget.vid.__del__()
@@ -141,7 +141,7 @@ class VFITApp(ThemedTk):
     prev_state = "None"
     prev_counter = 0
     prev_feedback = "None"
-    dummy_var = [None, 0, None]
+    dummy_var = [None, 0, None, 1]
 
     def gamification_data(dump, data):
         if data != app.dummy_var:
@@ -150,13 +150,13 @@ class VFITApp(ThemedTk):
                     app.prev_counter = data[1]
                 elif data[1] % 15 == 0:
                     speak(
-                        "Nice job. You're all done! You may now return to the exercise menu, or do another set.")
+                        "Nice job. You're all done with set {}! You may now return to the exercise menu, or do another set.".format(data[3]))
                 elif data[1] % 10 == 0:
                     speak("Ten done, Only Five more to go!")
                 elif data[1] % 5 == 0:
                     speak("Five done, Ten to go!")
                 app.prev_counter = data[1]
-
+                
             elif str(data[2]) != app.prev_feedback:
                 if str(data[2]) != "None":
                     speak(data[2])
