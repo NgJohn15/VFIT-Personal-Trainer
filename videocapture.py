@@ -68,9 +68,10 @@ class VideoCapture:
     exercise_state = None
     exercise_counter = 0
     feedback = None
+    exercise_set = 1
 
     def get_data(self):
-        return [self.exercise_state, self.exercise_counter, self.feedback]
+        return [self.exercise_state, self.exercise_counter, self.feedback, self.exercise_set]
 
     def process(self):
         """TODO: add docstring"""
@@ -185,6 +186,11 @@ class VideoCapture:
                     ret, frame = self.vid.read()
 
                     if ret:
+
+                        if self.exercise_counter > 15:
+                            self.exercise_counter = 1
+                            self.exercise_set += 1
+
                         # process image
                         # To improve performance, optionally mark the image as not writeable to
                         # pass by reference.
@@ -267,7 +273,7 @@ class VideoCapture:
 
                         cv2.putText(frame, text="FPS: " + fps, org=(0, 30),
                                     fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(0, 255, 0), thickness=1)
-                        cv2.putText(frame, text=self.exercise_state, org=(
+                        cv2.putText(frame, text="Set: " + str(self.exercise_set), org=(
                             850, 30), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(255, 0, 0), thickness=1)
                         cv2.putText(frame, text="Rep: " + str(self.exercise_counter), org=(
                             720, 30), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(255, 0, 0), thickness=1)
