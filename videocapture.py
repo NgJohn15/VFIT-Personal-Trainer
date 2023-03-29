@@ -125,7 +125,7 @@ class VideoCapture:
                         count += 1
                     elif (angles_arr_stream[2] < 60 or angles_arr_stream[2] > 120):
                         self.feedback = "Keep your arms extended, perpendicular to your body!"
-                    elif (angles_arr_stream[6] < 100 and state == "up" and  (angles_arr_stream[4] > 160 or angles_arr_stream[4] < 50)):
+                    elif (angles_arr_stream[6] < 100 and state == "up" and (angles_arr_stream[4] > 160 or angles_arr_stream[4] < 50)):
                         self.feedback = "Keep an eye on your lower back posture! Bend your torso like in the reference video"
 
                 elif (joint_arr[25].visibility >= 0.9):
@@ -136,7 +136,7 @@ class VideoCapture:
                         count += 1
                     elif (angles_arr_stream[3] < 60 or angles_arr_stream[3] > 120):
                         self.feedback = "Keep your arms extended, perpendicular to your body!"
-                    elif (angles_arr_stream[7] < 100 and state == "up" and  (angles_arr_stream[5] > 160 or angles_arr_stream[5] < 50)):
+                    elif (angles_arr_stream[7] < 100 and state == "up" and (angles_arr_stream[5] > 160 or angles_arr_stream[5] < 50)):
                         self.feedback = "Keep an eye on your lower back posture! Bend your torso like in the reference video"
                 return state, count
 
@@ -226,8 +226,8 @@ class VideoCapture:
                                     joints[joint[1]].x, joints[joint[1]].y], [joints[joint[2]].x, joints[joint[2]].y])
                                 angle = round(angle, 2)
                                 angles_arr.append(angle)
-                                cv2.putText(frame, str(angle), tuple(np.multiply([joints[joint[1]].x, joints[joint[1]].y], [
-                                            1920, 1080]).astype(int)), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
+                                """cv2.putText(frame, str(angle), tuple(np.multiply([joints[joint[1]].x, joints[joint[1]].y], [
+                                            1920, 1080]).astype(int)), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)"""
 
                             frame = frame[:, 480:1440]
 
@@ -271,8 +271,8 @@ class VideoCapture:
 
                         self.get_data()
 
-                        cv2.putText(frame, text="FPS: " + fps, org=(0, 30),
-                                    fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(0, 255, 0), thickness=1)
+                        """cv2.putText(frame, text="FPS: " + fps, org=(0, 30),
+                                    fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(0, 255, 0), thickness=1)"""
                         cv2.putText(frame, text="Set: " + str(self.exercise_set), org=(
                             850, 30), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(255, 0, 0), thickness=1)
                         cv2.putText(frame, text="Rep: " + str(self.exercise_counter), org=(
