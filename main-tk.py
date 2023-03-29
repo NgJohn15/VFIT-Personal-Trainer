@@ -83,6 +83,8 @@ def my_loop():
         # exit
         elif 'kill the program' in query:
             speak("exiting V-FIT PT")
+            engine.stop()
+            clean_video()
             app.destroy()
             break  # exit loop and thread will end
 
@@ -131,6 +133,7 @@ def clean_video():
 
     app.frames[VideoPage].stream_widgets.clear()
 
+
 class VFITApp(ThemedTk):
     current_page = ""
     previous_page = ""
@@ -149,17 +152,19 @@ class VFITApp(ThemedTk):
                 if data[1] == 0:
                     app.prev_counter = data[1]
                 elif data[1] % 15 == 0:
-                    speak(
-                        "Nice job. You're all done with set {}! You may now return to the exercise menu, or do another set.".format(data[3]))
+                    text = (
+                        "Nice job. You're all done with set {}! You may now return to the exercise menu, or do another set.").format(
+                        data[3])
+                    threading.Thread(target=speak, args=(text,)).start()
                 elif data[1] % 10 == 0:
-                    speak("Ten done, Only Five more to go!")
+                    threading.Thread(target=speak, args=("Ten done, Only Five more to go!",)).start()
                 elif data[1] % 5 == 0:
-                    speak("Five done, Ten to go!")
+                    threading.Thread(target=speak, args=("Five done, Ten to go!",)).start()
                 app.prev_counter = data[1]
-                
+
             elif str(data[2]) != app.prev_feedback:
                 if str(data[2]) != "None":
-                    speak(data[2])
+                    threading.Thread(target=speak, args=(data[2],)).start()
                     app.prev_feedback = data[2]
                 else:
                     app.prev_feedback = "None"
@@ -217,7 +222,6 @@ class VFITApp(ThemedTk):
         app.previous_page = app.current_page
         app.current_page = page.name
 
-
         # perform garbage collection
         if app.previous_page == 'Video':
             clean_video()
@@ -272,7 +276,7 @@ class SetupPage(tk.Frame):
 
         def play_sound(self):
             # Get the volume value from the slider
-            new_volume = volume_slider.get()/250
+            new_volume = volume_slider.get() / 250
             snapped_value = int(round(float(new_volume) / 10)) * 10
 
             # print(snapped_value)
@@ -409,10 +413,11 @@ class VideoPage(tk.Frame):
     def update_sources(self):
         # garbage collection
 
-        for widget in self.stream_widgets:
-            widget.vid.running = False
-            widget.vid.__del__()
-            widget.destroy()
+        clean_video()
+        # for widget in self.stream_widgets:
+        #     widget.vid.running = False
+        #     widget.vid.__del__()
+        #     widget.destroy()
 
         self.stream_widgets.clear()
         if DEBUG:
@@ -449,3 +454,5 @@ if __name__ == "__main__":
     task.start()  # start thread
     app.mainloop()
     task.join()  # wait for end of thread
+
+    engine.stop()
