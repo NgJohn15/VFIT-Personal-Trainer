@@ -75,6 +75,8 @@ def my_loop():
             elif 'exercise selection' in query:
                 app.change_page_to_n(
                     ExercisePage, "Changing to Exercise Selection")
+            elif 'scoreboard' in query:
+                app.change_page_to_n(Scoreboard, "Changing to Scoreboard")
             else:
                 speak("I didn't understand that GO TO command")
         elif 'go back' in query:
@@ -191,16 +193,19 @@ class VFITApp(ThemedTk):
         setup_frame = SetupPage(container, self)
         exercise_frame = ExercisePage(container, self)
         video_frame = VideoPage(container, self)
+        scoreboard_frame = Scoreboard(container, self)
 
         self.frames[WelcomePage] = welcome_frame
         self.frames[SetupPage] = setup_frame
         self.frames[ExercisePage] = exercise_frame
         self.frames[VideoPage] = video_frame
+        self.frames[Scoreboard] = scoreboard_frame
 
         setup_frame.grid(row=0, column=0, sticky="nsew")
         welcome_frame.grid(row=0, column=0, sticky="nsew")
         exercise_frame.grid(row=0, column=0, sticky="nsew")
         video_frame.grid(row=0, column=0, sticky="nsew")
+        scoreboard_frame.grid(row=0, column=0, sticky="nsew")
 
         self.current_page = WelcomePage.name
         self.show_frame(WelcomePage)
@@ -441,6 +446,11 @@ class VideoPage(tk.Frame):
         ]
         return sources
 
+class Scoreboard(tk.Frame):
+    name = "Scoreboard"
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
 
 if __name__ == "__main__":
     engine = pyttsx3.init('sapi5')  # Windows
