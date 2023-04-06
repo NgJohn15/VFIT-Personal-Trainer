@@ -1,6 +1,7 @@
 import pyttsx3
 import speech_recognition as sr
 import threading
+import tkinter
 import tkinter as tk
 from tkinter import ttk
 from tkinter import *
@@ -9,7 +10,8 @@ import pygame
 from ttkthemes import ThemedTk
 from tkCamera import tkCamera
 from PIL import Image, ImageTk
-
+import openpyxl
+import pandas as pd
 DEBUG = True
 
 
@@ -183,12 +185,14 @@ class VFITApp(ThemedTk):
         self.frames = {}
 
         welcome_frame = WelcomePage(container, self)
+        introduction_frame = IntroductionPage(container, self)
         setup_frame = SetupPage(container, self)
         exercise_frame = ExercisePage(container, self)
         video_frame = VideoPage(container, self)
         scoreboard_frame = Scoreboard(container, self)
 
         self.frames[WelcomePage] = welcome_frame
+        self.frames[IntroductionPage] = introduction_frame
         self.frames[SetupPage] = setup_frame
         self.frames[ExercisePage] = exercise_frame
         self.frames[VideoPage] = video_frame
@@ -196,6 +200,7 @@ class VFITApp(ThemedTk):
 
         setup_frame.grid(row=0, column=0, sticky="nsew")
         welcome_frame.grid(row=0, column=0, sticky="nsew")
+        introduction_frame.grid(row=0, column=0, sticky="nsew")
         exercise_frame.grid(row=0, column=0, sticky="nsew")
         video_frame.grid(row=0, column=0, sticky="nsew")
         scoreboard_frame.grid(row=0, column=0, sticky="nsew")
@@ -239,6 +244,8 @@ class VFITApp(ThemedTk):
         msg = "Going back"
         if app.previous_page == 'Welcome':
             self.change_page_to_n(WelcomePage, msg)
+        elif app.previous_page == 'Introduction':
+            self.change_page_to_n(IntroductionPage, msg)
         elif app.previous_page == 'Setup':
             self.change_page_to_n(SetupPage, msg)
         elif app.previous_page == 'Exercise':
@@ -259,13 +266,46 @@ class WelcomePage(tk.Frame):
         welcome_image = ImageTk.PhotoImage(temp_image)
         # WelcomeButton
         welcome_btn = tk.Button(self, image=welcome_image, compound="top", text="Welcome",
-                                command=lambda: app.change_page_to_n(SetupPage, ""))
+                                command=lambda: app.change_page_to_n(IntroductionPage, ""))
         # welcome_btn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed("arg"))
         welcome_btn.image = welcome_image
         welcome_btn.place(relx=.5, rely=.5, anchor='center',
-                          relheight=1, relwidth=1)
+                          relheight=1, relwidth=1) 
 
 
+class IntroductionPage(tk.Frame):
+    name = "Introduction"
+
+    def __init__(self, parent, controller):
+        self.controller = controller
+        tk.Frame.__init__(self, parent)
+        backbtn = tk.Button(self, text="Go Back", command=lambda: app.change_page_to_n(WelcomePage, ""),
+                            font=("Arial", 10), padx=30)
+        backbtn.place(relx=0.016, rely=0.01, anchor='center',
+                      relheight=0.02, relwidth=0.03)
+        df=pd.read_excel("excelfiles\commands.xlsx")
+        tree=ttk.Treeview(self)
+        tree["columns"] = list(df.columns)
+        #print(tree["columns"])
+        # Add column headings
+        for col in df.columns:
+            tree.heading(col, text=col)
+        # Add rows to the table
+        for i, row in df.iterrows():
+            tree.insert("", "end", values=list(row))
+            print(row.all)
+        tree_scroll = ttk.Scrollbar(tree, orient="vertical", command=tree.yview)
+        tree_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        tree.configure(yscrollcommand=tree_scroll.set)   
+        tree.place(relx=.5, rely=.5, anchor='center',
+                          relheight=0.2, relwidth=1)
+        next_btn = tk.Button(self, compound="top", text="Next",
+                                command=lambda: app.change_page_to_n(SetupPage, ""), font=("Arial", 20))
+        next_btn.place(relx=.9, rely=.9, anchor='center',
+                          relheight=0.1, relwidth=0.1)
+                
+
+       
 class SetupPage(tk.Frame):
     name = "Setup"
 
@@ -273,7 +313,7 @@ class SetupPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.configure(bg='white')
         # WelcomeButton
-        backbtn = tk.Button(self, text="Go Back", command=lambda: app.change_page_to_n(WelcomePage, ""),
+        backbtn = tk.Button(self, text="Go Back", command=lambda: app.change_page_to_n(IntroductionPage, ""),
                             font=("Arial", 10), padx=30)
         backbtn.place(relx=0.016, rely=0.01, anchor='center',
                       relheight=0.02, relwidth=0.03)
