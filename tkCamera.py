@@ -1,14 +1,8 @@
 #!/usr/bin/env python
-
-# author: Bartlomiej "furas" Burek (https://blog.furas.pl)
-# date: 2021.01.26
-
 import PIL.ImageTk
 import tkinter
 import tkinter.filedialog
 from videocapture import VideoCapture
-
-"""TODO: add docstring"""
 
 
 class tkCamera(tkinter.Frame):

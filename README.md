@@ -2,19 +2,17 @@
 
 ## Description
 
-VFIT Personal Trainer aims to use computer vision and voice recognition to promote health & fitness by assiting users in performing safe and fun exercises:
+VFIT Personal Trainer aims to use computer vision and voice recognition to promote health & fitness by assiting users in performing safe and fun exercises.
 
-- What was your motivation?
-- Why did you build this project? (Note: the answer is not "Because it was a homework assignment.")
-- What problem does it solve?
-- What did you learn?
+
+User's can select exercises using the interactive UI or by navigating with their voice. After selecting an exercise, VFIT PT will demonstrate the proper form of the exercise and will monitor the user's own form. VFIT PT has the added benefit of gamifiying popular exercises, making each repitation and set a fun miny game. Users can compete for the best score and compete on the leaderboards.
 
 ## Table of Contents (Optional)
 
 - [Installation](#installation)
 - [Usage](#usage)
+- [Tools](#tools)
 - [Credits](#credits)
-- [License](#license)
 
 ## Installation
 
@@ -30,42 +28,23 @@ python -m pip install -r requirements.txt
 
 ## Usage
 
-Simply run the main-tk.py file
+Start the program by running the main-tk.py file
 ```
 python main-tk.py
 ```
 
 ## Tools
-
+### User Interface
+The GUI was built using Python Tkinter. [Tkinter](https://docs.python.org/3/library/tkinter.html)
+### Speech Recognition
+Speech recognition was designed around Speech Recognition library [Speech Recognition](https://pypi.org/project/SpeechRecognition/)
+### Pose Estimation
+Pose estimation was generated through [OpenCV](https://opencv.org/) and classified through MediaPipe's [Pose](https://developers.google.com/mediapipe/solutions/vision/pose_landmarker/) model. 
+### Speech to Text
+Speech to text was handled using [pyttsx3](https://pypi.org/project/pyttsx3/) library
 
 ## Credits
 
  [John Ng](https://github.com/NgJohn15)
  [Danish Tamboli](https://github.com/danishtamboli123)
  [Ayush Shrivastava](https://github.com/Ayush2305)
-
-## License
-
-The last section of a high-quality README file is the license. This lets other developers know what they can and cannot do with your project. If you need help choosing a license, refer to [https://choosealicense.com/](https://choosealicense.com/).
-
----
-
-🏆 The previous sections are the bare minimum, and your project will ultimately determine the content of this document. You might also want to consider adding the following sections.
-
-## Badges
-
-![badmath](https://img.shields.io/github/languages/top/lernantino/badmath)
-
-Badges aren't necessary, per se, but they demonstrate street cred. Badges let other developers know that you know what you're doing. Check out the badges hosted by [shields.io](https://shields.io/). You may not understand what they all represent now, but you will in time.
-
-## Features
-
-If your project has a lot of features, list them here.
-
-## How to Contribute
-
-If you created an application or package and would like other developers to contribute it, you can include guidelines for how to do so. The [Contributor Covenant](https://www.contributor-covenant.org/) is an industry standard, but you can always write your own if you'd prefer.
-
-## Tests
-
-Go the extra mile and write tests for your application. Then provide examples on how to run them here.
