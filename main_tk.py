@@ -13,21 +13,6 @@ from PIL import Image, ImageTk
 DEBUG = True
 
 
-class VoiceThread(threading.Thread):
-    def __init__(self, *args, **kwargs):
-        super(VoiceThread, self).__init__(*args, **kwargs)
-        self._stop_event = threading.Event()
-
-    def stop(self):
-        self._stop_event.set()
-
-    def stopped(self):
-        return self._stop_event.is_set()
-
-    def start(self):
-        my_loop()
-
-
 def speak(text):
     if DEBUG:
         print("TTS:", text)
@@ -58,16 +43,23 @@ def get_command():
         if DEBUG:
             print(e)
         return "None"
-
     return query
 
 
-def my_loop():
+def get_voice_command():
     while True:
         query = get_command().lower()
 
+        # exit
+        if 'kill the program' in query:
+            speak("exiting V-FIT PT")
+            clean_video()
+            app.destroy()
+            engine.stop()
+            exit(0)
+
         # GO TO --> PAGE
-        if 'go to' in query:
+        elif 'go to' in query:
             if 'welcome page' in query:
                 app.change_page_to_n(WelcomePage, "Changing to Welcome Page")
             elif 'set up page' in query or 'setup page' in query:
@@ -82,14 +74,6 @@ def my_loop():
         elif 'go back' in query:
             app.change_to_previous()
 
-        # exit
-        elif 'kill the program' in query:
-            speak("exiting V-FIT PT")
-            engine.stop()
-            clean_video()
-            app.destroy()
-            break  # exit loop and thread will end
-
         # CLICK ON --> BTN
         elif 'click on' in query:
             if 'welcome button' in query and app.current_page == "Welcome":
@@ -99,12 +83,15 @@ def my_loop():
             else:
                 speak("I'm not sure what you want to click on")
 
+        # SETUP Page
         elif app.current_page == "Setup" and "ready" in query:
             app.change_page_to_n(ExercisePage, "Pick an exercise to begin!")
 
+        # WELCOME Page
         elif app.current_page == "Welcome" and "let's begin" in query:
             app.change_page_to_n(SetupPage, "Starting with setup")
 
+        # Exercise Page
         elif app.current_page == "Exercise":
             # exercise selection
             if 'bicep curls' in query:
@@ -119,11 +106,17 @@ def my_loop():
             elif 'jumping jacks' in query:
                 speak("Let's get to it!")
                 app.frames[ExercisePage].select_exercise('jumping_jacks')
+        # Video Page
         elif app.current_page == "Video":
             if 'exit' in query or "another exercise" in query:
                 app.change_page_to_n(
                     ExercisePage, 'Pick or say an exercise to begin!')
-    exit(0)
+        # Ignore empty prompts
+        elif "" == query:
+            pass
+        # Inform user
+        else:
+            speak("I didn't catch that. Please speak slowly and clearly.")
 
 
 def clean_video():
@@ -210,9 +203,13 @@ class VFITApp(ThemedTk):
         self.current_page = WelcomePage.name
         self.show_frame(WelcomePage)
 
-    # to display the current frame passed as
-    # parameter
+
     def show_frame(self, cont):
+        """
+        Display frame on GUI
+        :param cont: Frame Class
+        :return: void
+        """
         frame = self.frames[cont]
         frame.tkraise()
 
@@ -235,6 +232,10 @@ class VFITApp(ThemedTk):
         speak(msg)
 
     def change_to_previous(self):
+        """
+        Changes to previous frame if possible
+        :return: void
+        """
         msg = "Going back"
         if app.previous_page == 'Welcome':
             self.change_page_to_n(WelcomePage, msg)
@@ -277,18 +278,19 @@ class SetupPage(tk.Frame):
         backbtn.place(relx=0.016, rely=0.01, anchor='center',
                       relheight=0.02, relwidth=0.03)
         pygame.mixer.init()  # todo no volume
-        sound = pygame.mixer.Sound("sounds/ding.wav")
 
         def play_sound(self):
+            """
+            Plays ding sound
+            :param self: dummy self
+            :return:
+            """
+            sound = pygame.mixer.Sound("sounds/ding.wav")
             # Get the volume value from the slider
             new_volume = volume_slider.get() / 250
-            snapped_value = int(round(float(new_volume) / 10)) * 10
-
-            # print(snapped_value)
-            # print(new_volume)
             # Set the volume of the sound
             sound.set_volume(new_volume)
-            # Play the sound
+            # Play sound
             sound.play()
 
         volume_slider = ttk.Scale(
@@ -340,6 +342,10 @@ class SetupPage(tk.Frame):
                         relheight=0.2, relwidth=0.3)
 
     def mic_test(self):
+        """
+        Functional call for Mic Test Button, calls voice recongition function
+        :return: void
+        """
         speak("Listening")
         speak("You said " + get_command())
 
@@ -400,6 +406,11 @@ class ExercisePage(tk.Frame):
         jumping_btn.configure(bg='white', fg='black')
 
     def select_exercise(self, exercise_name):
+        """
+        Selects the current exercise and updates frame
+        :param exercise_name: Exercise selected
+        :return: void
+        """
         app.change_page_to_n(VideoPage, "")
         app.selected_exercise = exercise_name
         app.frames[VideoPage].update_sources()
@@ -416,15 +427,15 @@ class VideoPage(tk.Frame):
         self.height = self.winfo_screenheight()
 
     def update_sources(self):
+        """
+        Updates the video source file
+        :return: void
+        """
+
         # garbage collection
-
         clean_video()
-        # for widget in self.stream_widgets:
-        #     widget.vid.running = False
-        #     widget.vid.__del__()
-        #     widget.destroy()
-
         self.stream_widgets.clear()
+
         if DEBUG:
             print("updating to", app.selected_exercise)
         for number, (text, source, exercise_type) in enumerate(self.get_sources(app.selected_exercise)):
@@ -435,6 +446,11 @@ class VideoPage(tk.Frame):
             self.stream_widgets.append(widget)
 
     def get_sources(self, exercise):
+        """
+        Formats source file for video player
+        :param exercise: name of exercise
+        :return: source dict in proper format
+        """
         sources = [  # (text, source)
             # local webcams
             ("me", 0, str(exercise)),  # ~~~~
@@ -446,11 +462,13 @@ class VideoPage(tk.Frame):
         ]
         return sources
 
+
 class Scoreboard(tk.Frame):
     name = "Scoreboard"
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+
 
 if __name__ == "__main__":
     engine = pyttsx3.init('sapi5')  # Windows
@@ -459,10 +477,7 @@ if __name__ == "__main__":
 
     # run voice recognition thread
     # it has to be `,` in `(queue,)` to create tuple with one value
-    task = threading.Thread(target=my_loop, args=())
+    task = threading.Thread(target=get_voice_command, args=())
     app = VFITApp()
     task.start()  # start thread
     app.mainloop()
-    task.join()  # wait for end of thread
-
-    engine.stop()
