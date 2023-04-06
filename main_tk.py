@@ -285,20 +285,20 @@ class IntroductionPage(tk.Frame):
                       relheight=0.02, relwidth=0.03)
         df=pd.read_excel("excelfiles\commands.xlsx")
         tree=ttk.Treeview(self)
+        style = ttk.Style()
+        style.configure("Treeview", font=("Arial", 18), rowheight=34)
         tree["columns"] = list(df.columns)
-        #print(tree["columns"])
         # Add column headings
         for col in df.columns:
             tree.heading(col, text=col)
         # Add rows to the table
         for i, row in df.iterrows():
             tree.insert("", "end", values=list(row))
-            print(row.all)
         tree_scroll = ttk.Scrollbar(tree, orient="vertical", command=tree.yview)
         tree_scroll.pack(side=tk.RIGHT, fill=tk.Y)
         tree.configure(yscrollcommand=tree_scroll.set)   
         tree.place(relx=.5, rely=.5, anchor='center',
-                          relheight=0.2, relwidth=1)
+                          relheight=0.35, relwidth=1)
         next_btn = tk.Button(self, compound="top", text="Next",
                                 command=lambda: app.change_page_to_n(SetupPage, ""), font=("Arial", 20))
         next_btn.place(relx=.9, rely=.9, anchor='center',
