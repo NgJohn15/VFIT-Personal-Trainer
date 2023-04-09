@@ -1,3 +1,6 @@
+import datetime
+import os
+
 import pyttsx3
 import speech_recognition as sr
 import threading
@@ -208,7 +211,6 @@ class VFITApp(ThemedTk):
 
         self.current_page = WelcomePage.name
         self.show_frame(WelcomePage)
-
 
     def show_frame(self, cont):
         """
@@ -570,6 +572,16 @@ class Scoreboard(tk.Frame):
 
 
 if __name__ == "__main__":
+    # Data collection metrics file location
+    filepath = "./data/"
+    ct = datetime.datetime.now()
+    id_num = ct.strftime("%y%m%d%H%M")
+    filename = id_num+'.txt'
+    os.makedirs(os.path.dirname(filepath + filename), exist_ok=True)
+    with open(filepath + filename, "w") as f:
+        f.write(ct.strftime("%m/%d/%y)")+'\n')
+        f.write("Data Begins Below\n")
+
     engine = pyttsx3.init('sapi5')  # Windows
     voices = engine.getProperty('voices')
     engine.setProperty('voice', voices[0].id)
