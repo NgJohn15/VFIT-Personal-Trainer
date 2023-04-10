@@ -565,6 +565,14 @@ class VideoPage(tk.Frame):
             widget.grid(row=0, column=number)
             self.stream_widgets.append(widget)
 
+            backbtn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
+            (self.winfo_screenheight()//15, self.winfo_screenheight()//15)))
+            backbtn = tk.Button(self, image=backbtn_image, command=lambda: app.change_page_to_n(ExercisePage, ""),
+                                font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
+            backbtn.image = backbtn_image
+            backbtn.place(relx=((self.winfo_screenwidth()//20)/self.winfo_screenwidth()*9/16),
+                        rely=(1 - (self.winfo_screenheight()//20)/self.winfo_screenheight()), anchor='center')
+
     def get_sources(self, exercise):
         """
         Formats source file for video player
