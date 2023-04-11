@@ -1,20 +1,20 @@
 import datetime
 import os
-
 import pyttsx3
 import speech_recognition as sr
 import threading
 import tkinter as tk
 from tkinter import ttk
 from tkinter import *
-from tkinter.ttk import *
 import pygame
 from ttkthemes import ThemedTk
 from tkCamera import tkCamera
 from PIL import Image, ImageTk
 import pandas as pd
 import textwrap3
+
 DEBUG = True
+TEST = True
 
 
 def wrap(string, lenght=50):
@@ -149,12 +149,37 @@ class VFITApp(ThemedTk):
     prev_feedback = "None"
     dummy_var = [None, 0, None, 1]
 
+    exercise_start_time = None
+    filepath = None
+
+    # User Data
+    total_voice_commands = 0
+    total_click_commands = 0
+    squat_completion_time = None
+    bicep_curl_completion_time = None
+    jumping_jack_completion_time = None
+    lunge_completion_time = None
+
     def gamification_data(dump, data):
         if data != app.dummy_var:
             if data[1] != app.prev_counter:
                 if data[1] == 0:
                     app.prev_counter = data[1]
                 elif data[1] % 15 == 0:
+                    if TEST:
+                        if app.selected_exercise == 'bicep_curls':
+                            app.bicep_curl_completion_time = datetime.datetime.now() - app.exercise_start_time
+                            write_data(app.filepath, "BicepCurls_Completion_Time " + str(app.bicep_curl_completion_time))
+                        elif app.selected_exercise == 'jumping_jacks':
+                            app.jumping_jack_completion_time = datetime.datetime.now() - app.exercise_start_time
+                            write_data(app.filepath, "JumpingJacks_Completion_time " + str(app.jumping_jack_completion_time))
+                        elif app.selected_exercise == 'squats':
+                            app.squat_completion_time = datetime.datetime.now() - app.exercise_start_time
+                            write_data(app.filepath, "Squats_Completion_Time " + str(app.squat_completion_time))
+                        elif app.selected_exercise == 'lunges':
+                            app.lunge_completion_time = datetime.datetime.now() - app.exercise_start_time
+                            write_data(app.filepath, "Lunges_Completion_Time " + str(app.lunge_completion_time))
+
                     text = (
                         "Nice job. You're all done with set {}! You may now return to the exercise menu, or do another set.").format(
                         data[3])
@@ -275,7 +300,8 @@ class WelcomePage(tk.Frame):
         welcome_image = ImageTk.PhotoImage(temp_image)
         # WelcomeButton
         welcome_btn = tk.Button(self, image=welcome_image, compound="top",
-                                command=lambda: app.change_page_to_n(IntroductionPage, ""), highlightthickness=0, bd=0, bg="white", activebackground='white')
+                                command=lambda: app.change_page_to_n(IntroductionPage, ""), highlightthickness=0, bd=0,
+                                bg="white", activebackground='white')
         # welcome_btn = ttk.Button(self, text="Welcome", command=lambda: self.welcome_button_pressed("arg"))
         welcome_btn.image = welcome_image
         welcome_btn.place(relx=.5, rely=.5, anchor='center',
@@ -291,16 +317,16 @@ class IntroductionPage(tk.Frame):
         self.configure(bg='white')
 
         backbtn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
-            (self.winfo_screenheight()//15, self.winfo_screenheight()//15)))
+            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         backbtn = tk.Button(self, image=backbtn_image, command=lambda: app.change_page_to_n(
             WelcomePage, ""), highlightthickness=0, bd=0, bg="white", activebackground='white')
         backbtn.image = backbtn_image
-        backbtn.place(relx=((self.winfo_screenwidth()//20)/self.winfo_screenwidth()*9/16),
-                      rely=(1 - (self.winfo_screenheight()//20)/self.winfo_screenheight()), anchor='center')
+        backbtn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                      rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
 
         voice_commands_list = tk.Label(self, text="VOICE COMMANDS")
         voice_commands_list.config(
-            font=("Helvetica", 24), bd=0, bg="white", activebackground='white', foreground = "#223063")
+            font=("Helvetica", 24), bd=0, bg="white", activebackground='white', foreground="#223063")
         voice_commands_list.place(relx=0.5, rely=0.05, anchor="center")
 
         df = pd.read_excel("excelfiles\commands.xlsx")
@@ -329,7 +355,7 @@ class IntroductionPage(tk.Frame):
         # Add column headings
         for col in df.columns:
             tree.heading(col, text=col)
-            tree.column(col, anchor = 'center')
+            tree.column(col, anchor='center')
 
         # Add rows to the table
         for i, row in df.iterrows():
@@ -353,15 +379,16 @@ class IntroductionPage(tk.Frame):
         tree.tag_configure('oddrow', background='#223063')
         tree.tag_configure('evenrow', background='#314792')
         tree.place(relx=0.5, rely=0.5,
-                   relheight=(1 - (self.winfo_screenheight()//5)/self.winfo_screenheight()), relwidth=1 - ((self.winfo_screenwidth()//5)/self.winfo_screenwidth()*9/16), anchor="center")
+                   relheight=(1 - (self.winfo_screenheight() // 5) / self.winfo_screenheight()),
+                   relwidth=1 - ((self.winfo_screenwidth() // 5) / self.winfo_screenwidth() * 9 / 16), anchor="center")
 
         next_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/next_btn.png").convert(mode="RGBA").resize(
-            (self.winfo_screenheight()//15, self.winfo_screenheight()//15)))
+            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         next_btn = tk.Button(self, image=next_btn_image, command=lambda: app.change_page_to_n(SetupPage, ""),
                              font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
         next_btn.image = next_btn_image
-        next_btn.place(relx=(1 - (self.winfo_screenwidth()//20)/self.winfo_screenwidth()*9/16),
-                       rely=(1 - (self.winfo_screenheight()//20)/self.winfo_screenheight()), anchor='center')
+        next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                       rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
 
 
 class SetupPage(tk.Frame):
@@ -373,12 +400,12 @@ class SetupPage(tk.Frame):
 
         # WelcomeButton
         backbtn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
-            (self.winfo_screenheight()//15, self.winfo_screenheight()//15)))
+            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         backbtn = tk.Button(self, image=backbtn_image, command=lambda: app.change_page_to_n(IntroductionPage, ""),
                             font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
         backbtn.image = backbtn_image
-        backbtn.place(relx=((self.winfo_screenwidth()//20)/self.winfo_screenwidth()*9/16),
-                      rely=(1 - (self.winfo_screenheight()//20)/self.winfo_screenheight()), anchor='center')
+        backbtn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                      rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
 
         pygame.mixer.init()  # todo no volume
 
@@ -406,8 +433,8 @@ class SetupPage(tk.Frame):
         volume_slider.set(0)
         volume_slider.get()
         volume_slider.place(relx=.5, rely=.5, anchor='center',
-                            relheight=(self.winfo_screenheight()//30)/self.winfo_screenheight(), relwidth=0.4)
-        style = ttk.Style() 
+                            relheight=(self.winfo_screenheight() // 30) / self.winfo_screenheight(), relwidth=0.4)
+        style = ttk.Style()
         style.configure("TScale",
                         background="#6279CA",
                         fieldbackground="#6279CA",
@@ -415,47 +442,45 @@ class SetupPage(tk.Frame):
                         troughcolor="#223063",
                         )
 
-
         vol_down_image = ImageTk.PhotoImage(Image.open("ui_elements/volume_zero.png").convert(mode="RGBA").resize(
-            (self.winfo_screenheight()//15, self.winfo_screenheight()//15)))
+            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         volume_zero_btn = tk.Button(self, image=vol_down_image,
-                                    command=lambda: volume_slider.set(0), highlightthickness=0, bd=0, bg="white", activebackground='white')
+                                    command=lambda: volume_slider.set(0), highlightthickness=0, bd=0, bg="white",
+                                    activebackground='white')
         volume_zero_btn.image = vol_down_image
         volume_zero_btn.place(relx=0.25, rely=0.5,
                               anchor='center')
         volume_zero_btn.configure(bg='white', fg='white')
 
-
-
         vol_up_image = ImageTk.PhotoImage(Image.open("ui_elements/volume_full.png").convert(mode="RGBA").resize(
-            (self.winfo_screenheight()//15, self.winfo_screenheight()//15)))
+            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         volume_full_btn = tk.Button(self, image=vol_up_image,
-                                    command=lambda: volume_slider.set(100), highlightthickness=0, bd=0, bg="white", activebackground='white')
+                                    command=lambda: volume_slider.set(100), highlightthickness=0, bd=0, bg="white",
+                                    activebackground='white')
         volume_full_btn.image = vol_up_image
         volume_full_btn.place(relx=0.75, rely=0.5,
                               anchor='center')
         volume_full_btn.configure(bg='white', fg='white')
 
-
-
         text = tk.Label(self, text="SFX Volume")
-        text.config(font=("Helvetica", 16), bd=0, bg="white", activebackground='white', foreground = "#223063")
+        text.config(font=("Helvetica", 16), bd=0, bg="white", activebackground='white', foreground="#223063")
         text.place(relx=0.5, rely=0.55, anchor='center')
 
         mic_image = ImageTk.PhotoImage(Image.open("ui_elements/mic_test.png").convert(mode="RGBA").resize(
-            (self.winfo_screenheight()//10, self.winfo_screenheight()//10)))
+            (self.winfo_screenheight() // 10, self.winfo_screenheight() // 10)))
         mic_rec_btn = tk.Button(self, text="TEST MIC", image=mic_image, compound='top',
-                                command=lambda: self.mic_test(), font=("Helvetica", 16), highlightthickness=0, bd=0, bg="white", activebackground='white',  foreground = "#223063")
+                                command=lambda: self.mic_test(), font=("Helvetica", 16), highlightthickness=0, bd=0,
+                                bg="white", activebackground='white', foreground="#223063")
         mic_rec_btn.image = mic_image
         mic_rec_btn.place(relx=.5, rely=0.75, anchor='center')
 
         next_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/next_btn.png").convert(mode="RGBA").resize(
-            (self.winfo_screenheight()//15, self.winfo_screenheight()//15)))
+            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         next_btn = tk.Button(self, image=next_btn_image, command=lambda: app.change_page_to_n(ExercisePage, ""),
                              font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
         next_btn.image = next_btn_image
-        next_btn.place(relx=(1 - (self.winfo_screenwidth()//20)/self.winfo_screenwidth()*9/16),
-                       rely=(1 - (self.winfo_screenheight()//20)/self.winfo_screenheight()), anchor='center')
+        next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                       rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
 
     def mic_test(self):
         """
@@ -474,55 +499,63 @@ class ExercisePage(tk.Frame):
         self.configure(bg='white')
 
         backbtn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
-            (self.winfo_screenheight()//15, self.winfo_screenheight()//15)))
+            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         backbtn = tk.Button(self, image=backbtn_image, command=lambda: app.change_page_to_n(SetupPage, ""),
                             font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
         backbtn.image = backbtn_image
-        backbtn.place(relx=((self.winfo_screenwidth()//20)/self.winfo_screenwidth()*9/16),
-                      rely=(1 - (self.winfo_screenheight()//20)/self.winfo_screenheight()), anchor='center')
+        backbtn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                      rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
 
         image = Image.open("exercises/curls.png")
         temp_image = image.resize(
-            (self.winfo_screenwidth() // 5, int(self.winfo_screenwidth() // 5)*16//9))
+            (self.winfo_screenwidth() // 5, int(self.winfo_screenwidth() // 5) * 16 // 9))
         bicep_image = ImageTk.PhotoImage(temp_image)
         bicep_btn = tk.Button(self, image=bicep_image, compound="top",
-                              command=lambda: self.select_exercise("bicep_curls"), highlightthickness=0, bd=0, bg="white", activebackground='white')
+                              command=lambda: self.select_exercise("bicep_curls"), highlightthickness=0, bd=0,
+                              bg="white", activebackground='white')
         bicep_btn.image = bicep_image
         bicep_btn.place(relx=0.14, rely=0.5, anchor='center',
-                        relheight=(int(self.winfo_screenwidth() // 5)*16//9 / self.winfo_screenheight()), relwidth=((self.winfo_screenwidth() // 5) / self.winfo_screenwidth()))
+                        relheight=(int(self.winfo_screenwidth() // 5) * 16 // 9 / self.winfo_screenheight()),
+                        relwidth=((self.winfo_screenwidth() // 5) / self.winfo_screenwidth()))
         bicep_btn.configure(bg='white', fg='black')
 
         image = Image.open("exercises/lunges.png")
         temp_image = image.resize(
-            (self.winfo_screenwidth() // 5, int(self.winfo_screenwidth() // 5)*16//9))
+            (self.winfo_screenwidth() // 5, int(self.winfo_screenwidth() // 5) * 16 // 9))
         lunges_image = ImageTk.PhotoImage(temp_image)
         lunge_btn = tk.Button(self, image=lunges_image, compound="top",
-                              command=lambda: self.select_exercise("lunges"), font=("Helvetica", 40), highlightthickness=0, bd=0, bg="white", activebackground='white')
+                              command=lambda: self.select_exercise("lunges"), font=("Helvetica", 40),
+                              highlightthickness=0, bd=0, bg="white", activebackground='white')
         lunge_btn.image = lunges_image
         lunge_btn.place(relx=0.38, rely=0.5, anchor='center',
-                        relheight=(int(self.winfo_screenwidth() // 5)*16//9 / self.winfo_screenheight()), relwidth=((self.winfo_screenwidth() // 5) / self.winfo_screenwidth()))
+                        relheight=(int(self.winfo_screenwidth() // 5) * 16 // 9 / self.winfo_screenheight()),
+                        relwidth=((self.winfo_screenwidth() // 5) / self.winfo_screenwidth()))
         lunge_btn.configure(bg='white', fg='black')
 
         image = Image.open("exercises/squat.png")
         temp_image = image.resize(
-            (self.winfo_screenwidth() // 5, int(self.winfo_screenwidth() // 5)*16//9))
+            (self.winfo_screenwidth() // 5, int(self.winfo_screenwidth() // 5) * 16 // 9))
         squats_image = ImageTk.PhotoImage(temp_image)
         squat_btn = tk.Button(self, image=squats_image, compound="top",
-                              command=lambda: self.select_exercise("squats"), font=("Helvetica", 40), highlightthickness=0, bd=0, bg="white", activebackground='white')
+                              command=lambda: self.select_exercise("squats"), font=("Helvetica", 40),
+                              highlightthickness=0, bd=0, bg="white", activebackground='white')
         squat_btn.image = squats_image
         squat_btn.place(relx=0.62, rely=0.5, anchor='center',
-                        relheight=(int(self.winfo_screenwidth() // 5)*16//9 / self.winfo_screenheight()), relwidth=((self.winfo_screenwidth() // 5) / self.winfo_screenwidth()))
+                        relheight=(int(self.winfo_screenwidth() // 5) * 16 // 9 / self.winfo_screenheight()),
+                        relwidth=((self.winfo_screenwidth() // 5) / self.winfo_screenwidth()))
         squat_btn.configure(bg='white', fg='black')
 
         image = Image.open("exercises/jumping-jacks.png")
         temp_image = image.resize(
-            (self.winfo_screenwidth() // 5, int(self.winfo_screenwidth() // 5)*16//9))
+            (self.winfo_screenwidth() // 5, int(self.winfo_screenwidth() // 5) * 16 // 9))
         jumping_image = ImageTk.PhotoImage(temp_image)
         jumping_btn = tk.Button(self, image=jumping_image, compound="top",
-                                command=lambda: self.select_exercise("jumping_jacks"), font=("Helvetica", 40), highlightthickness=0, bd=0, bg="white", activebackground='white')
+                                command=lambda: self.select_exercise("jumping_jacks"), font=("Helvetica", 40),
+                                highlightthickness=0, bd=0, bg="white", activebackground='white')
         jumping_btn.image = jumping_image
         jumping_btn.place(relx=0.86, rely=0.5, anchor='center',
-                          relheight=(int(self.winfo_screenwidth() // 5)*16//9 / self.winfo_screenheight()), relwidth=((self.winfo_screenwidth() // 5) / self.winfo_screenwidth()))
+                          relheight=(int(self.winfo_screenwidth() // 5) * 16 // 9 / self.winfo_screenheight()),
+                          relwidth=((self.winfo_screenwidth() // 5) / self.winfo_screenwidth()))
         jumping_btn.configure(bg='white', fg='black')
 
     def select_exercise(self, exercise_name):
@@ -533,6 +566,8 @@ class ExercisePage(tk.Frame):
         """
         app.change_page_to_n(VideoPage, "")
         app.selected_exercise = exercise_name
+        if TEST:
+            app.exercise_start_time = datetime.datetime.now()
         app.frames[VideoPage].update_sources()
         speak("Try to follow the reference video on the right")
 
@@ -566,12 +601,13 @@ class VideoPage(tk.Frame):
             self.stream_widgets.append(widget)
 
             backbtn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
-            (self.winfo_screenheight()//15, self.winfo_screenheight()//15)))
+                (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
             backbtn = tk.Button(self, image=backbtn_image, command=lambda: app.change_page_to_n(ExercisePage, ""),
-                                font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
+                                font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white",
+                                activebackground='white')
             backbtn.image = backbtn_image
-            backbtn.place(relx=((self.winfo_screenwidth()//20)/self.winfo_screenwidth()*9/16),
-                        rely=(1 - (self.winfo_screenheight()//20)/self.winfo_screenheight()), anchor='center')
+            backbtn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                          rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
 
     def get_sources(self, exercise):
         """
@@ -598,15 +634,31 @@ class Scoreboard(tk.Frame):
         tk.Frame.__init__(self, parent)
 
 
+def write_data(file, data: str):
+    """
+    Appends data to file, assumes file exists
+    :param file: filepath
+    :param data: data to be written
+    :return: void
+    """
+    with open(file, 'a') as f:
+        f.write(data)
+        f.write('\n')
+
+
 if __name__ == "__main__":
+    # initialize app
+    app = VFITApp()
+
     # Data collection metrics file location
     filepath = "./data/"
     ct = datetime.datetime.now()
     id_num = ct.strftime("%y%m%d%H%M")
-    filename = id_num+'.txt'
-    os.makedirs(os.path.dirname(filepath + filename), exist_ok=True)
-    with open(filepath + filename, "w") as f:
-        f.write(ct.strftime("%m/%d/%y)")+'\n')
+    filename = id_num + '.txt'
+    app.filepath = filepath+filename
+    os.makedirs(os.path.dirname(app.filepath), exist_ok=True)
+    with open(app.filepath, "w") as f:
+        f.write(ct.strftime("%m/%d/%y)") + '\n')
         f.write("Data Begins Below\n")
 
     engine = pyttsx3.init('sapi5')  # Windows
@@ -616,6 +668,5 @@ if __name__ == "__main__":
     # run voice recognition thread
     # it has to be `,` in `(queue,)` to create tuple with one value
     task = threading.Thread(target=get_voice_command, args=())
-    app = VFITApp()
     task.start()  # start thread
-    app.mainloop()
+    app.mainloop()  # start GUI thread
