@@ -90,9 +90,35 @@ def get_voice_command():
                 app.change_page_to_n(Scoreboard, "Changing to Scoreboard")
             else:
                 speak("I didn't understand that GO TO command")
+
+        # Go back
         elif 'go back' in query:
             app.total_voice_commands += 1
-            app.change_to_previous()
+            # Setup Page
+            if app.current_page == "Setup":
+                app.change_page_to_n(WelcomePage, "Welcome to V-FIT PT")
+            # Exercise Selection
+            elif app.current_page == "Exercise":
+                app.change_page_to_n(SetupPage, "Setup")
+            # Video
+            elif app.current_page == "Video":
+                app.change_page_to_n(ExercisePage, "Click or say an exercise to begin")
+
+        # Go next
+        elif 'next' in query:
+            app.total_voice_commands += 1
+            # Welcome Page
+            if app.current_page == "Welcome":
+                app.change_page_to_n(SetupPage, "Setup")
+            # Setup Page
+            elif app.current_page == "Setup":
+                app.change_page_to_n(ExercisePage, "Select or say an exercise to begin")
+            # Exercise Selection
+            elif app.current_page == "Exercise":
+                speak("Select or say an exercise to begin")
+            # Video
+            elif app.current_page == "Video":
+                app.change_page_to_n(Scoreboard, "")
 
         # CLICK ON --> BTN
         elif 'click on' in query:
@@ -322,23 +348,6 @@ class VFITApp(ThemedTk):
 
         self.show_frame(page)
         speak(msg)
-
-    def change_to_previous(self):
-        """
-        Changes to previous frame if possible
-        :return: void
-        """
-        msg = "Going back"
-        if app.previous_page == 'Welcome':
-            self.change_page_to_n(WelcomePage, msg)
-        elif app.previous_page == 'Introduction':
-            self.change_page_to_n(IntroductionPage, msg)
-        elif app.previous_page == 'Setup':
-            self.change_page_to_n(SetupPage, msg)
-        elif app.previous_page == 'Exercise':
-            self.change_page_to_n(ExercisePage, msg)
-        elif app.previous_page == 'Video':
-            self.change_page_to_n(VideoPage, msg)
 
 
 class WelcomePage(tk.Frame):
