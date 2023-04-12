@@ -17,8 +17,8 @@ DEBUG = True
 TEST = True
 
 
-def wrap(string, lenght=50):
-    return '\n'.join(textwrap3.wrap(string, lenght))
+def wrap(string, length=50):
+    return '\n'.join(textwrap3.wrap(string, length))
 
 
 def speak(text):
@@ -54,12 +54,15 @@ def get_command():
     return query
 
 
-def get_voice_command():
+def get_voice_command():  # TODO: add voice increments
     while True:
         query = get_command().lower()
 
         # exit
         if 'kill the program' in query:
+            # save UI data
+            save_user_data()
+
             speak("exiting V-FIT PT")
             clean_video()
             app.destroy()
@@ -69,54 +72,68 @@ def get_voice_command():
         # GO TO --> PAGE
         elif 'go to' in query:
             if 'welcome page' in query:
+                app.total_voice_commands += 1
                 app.change_page_to_n(WelcomePage, "Changing to Welcome Page")
             elif 'set up page' in query or 'setup page' in query:
+                app.total_voice_commands += 1
                 app.change_page_to_n(SetupPage, "Changing to Setup Page")
             elif 'exercise selection' in query:
+                app.total_voice_commands += 1
                 app.change_page_to_n(
                     ExercisePage, "Changing to Exercise Selection")
             elif 'scoreboard' in query:
+                app.total_voice_commands += 1
                 app.change_page_to_n(Scoreboard, "Changing to Scoreboard")
             else:
                 speak("I didn't understand that GO TO command")
         elif 'go back' in query:
+            app.total_voice_commands += 1
             app.change_to_previous()
 
         # CLICK ON --> BTN
         elif 'click on' in query:
             if 'welcome button' in query and app.current_page == "Welcome":
+                app.total_voice_commands += 1
                 app.change_page_to_n(SetupPage, "Setup")
             elif 'ready button' in query and app.current_page == "Setup":
+                app.total_voice_commands += 1
                 app.change_page_to_n(ExercisePage, "Exercise selection")
             else:
                 speak("I'm not sure what you want to click on")
 
         # SETUP Page
         elif app.current_page == "Setup" and "ready" in query:
+            app.total_voice_commands += 1
             app.change_page_to_n(ExercisePage, "Pick an exercise to begin!")
 
         # WELCOME Page
         elif app.current_page == "Welcome" and "let's begin" in query:
+            app.total_voice_commands += 1
             app.change_page_to_n(SetupPage, "Starting with setup")
 
         # Exercise Page
         elif app.current_page == "Exercise":
             # exercise selection
             if 'bicep curls' in query:
+                app.total_voice_commands += 1
                 speak("Let's do some curls!")
                 app.frames[ExercisePage].select_exercise('bicep_curls')
             elif 'lunges' in query:
+                app.total_voice_commands += 1
                 speak("Here we go!")
                 app.frames[ExercisePage].select_exercise('lunges')
             elif 'squats' in query:
+                app.total_voice_commands += 1
                 speak("Let's go!")
                 app.frames[ExercisePage].select_exercise('squats')
             elif 'jumping jacks' in query:
+                app.total_voice_commands += 1
                 speak("Let's get to it!")
                 app.frames[ExercisePage].select_exercise('jumping_jacks')
         # Video Page
         elif app.current_page == "Video":
             if 'exit' in query or "another exercise" in query:
+                app.total_voice_commands += 1
                 app.change_page_to_n(
                     ExercisePage, 'Pick or say an exercise to begin!')
         # Ignore empty prompts
@@ -137,6 +154,16 @@ def clean_video():
     app.frames[VideoPage].stream_widgets.clear()
 
 
+def save_user_data():
+    """
+    Save user data from UI interactions
+    :return: void
+    """
+
+    write_data(app.filepath, "Voice_Total " + str(app.total_voice_commands))
+    write_data(app.filepath, "Mouse_Total " + str(app.total_click_commands))
+
+
 class VFITApp(ThemedTk):
     current_page = ""
     previous_page = ""
@@ -153,6 +180,7 @@ class VFITApp(ThemedTk):
     filepath = None
 
     # User Data
+    negative_feedback_count = 0
     total_voice_commands = 0
     total_click_commands = 0
     squat_completion_time = None
@@ -160,7 +188,7 @@ class VFITApp(ThemedTk):
     jumping_jack_completion_time = None
     lunge_completion_time = None
 
-    def gamification_data(dump, data):
+    def gamification_data(self, data):
         if data != app.dummy_var:
             if data[1] != app.prev_counter:
                 if data[1] == 0:
@@ -169,19 +197,27 @@ class VFITApp(ThemedTk):
                     if TEST:
                         if app.selected_exercise == 'bicep_curls':
                             app.bicep_curl_completion_time = datetime.datetime.now() - app.exercise_start_time
-                            write_data(app.filepath, "BicepCurls_Completion_Time " + str(app.bicep_curl_completion_time))
+                            write_data(app.filepath,
+                                       "BicepCurls_Completion_Time " + str(app.bicep_curl_completion_time))
+                            write_data(app.filepath, "BicepCurls_Negative_Feedback " + str(app.negative_feedback_count))
                         elif app.selected_exercise == 'jumping_jacks':
                             app.jumping_jack_completion_time = datetime.datetime.now() - app.exercise_start_time
-                            write_data(app.filepath, "JumpingJacks_Completion_time " + str(app.jumping_jack_completion_time))
+                            write_data(app.filepath,
+                                       "JumpingJacks_Completion_time " + str(app.jumping_jack_completion_time))
+                            write_data(app.filepath,
+                                       "JumpingJacks_Negative_Feedback " + str(app.negative_feedback_count))
                         elif app.selected_exercise == 'squats':
                             app.squat_completion_time = datetime.datetime.now() - app.exercise_start_time
                             write_data(app.filepath, "Squats_Completion_Time " + str(app.squat_completion_time))
+                            write_data(app.filepath, "Squats_Negative_Feedback " + str(app.negative_feedback_count))
                         elif app.selected_exercise == 'lunges':
                             app.lunge_completion_time = datetime.datetime.now() - app.exercise_start_time
                             write_data(app.filepath, "Lunges_Completion_Time " + str(app.lunge_completion_time))
+                            write_data(app.filepath, "Lunges_Negative_Feedback " + str(app.negative_feedback_count))
 
                     text = (
-                        "Nice job. You're all done with set {}! You may now return to the exercise menu, or do another set.").format(
+                        "Nice job. You're all done with set {}! You may now return to the exercise menu, "
+                        "or do another set.").format(
                         data[3])
                     threading.Thread(target=speak, args=(text,)).start()
                 elif data[1] % 10 == 0:
@@ -194,6 +230,9 @@ class VFITApp(ThemedTk):
 
             elif str(data[2]) != app.prev_feedback:
                 if str(data[2]) != "None":
+                    if TEST:
+                        # increment feedback counter
+                        app.negative_feedback_count += 1
                     threading.Thread(target=speak, args=(data[2],)).start()
                     app.prev_feedback = data[2]
                 else:
@@ -316,20 +355,20 @@ class IntroductionPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.configure(bg='white')
 
-        backbtn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
+        back_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
-        backbtn = tk.Button(self, image=backbtn_image, command=lambda: app.change_page_to_n(
+        back_btn = tk.Button(self, image=back_btn_image, command=lambda: app.change_page_to_n(
             WelcomePage, ""), highlightthickness=0, bd=0, bg="white", activebackground='white')
-        backbtn.image = backbtn_image
-        backbtn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
-                      rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+        back_btn.image = back_btn_image
+        back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                       rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
 
         voice_commands_list = tk.Label(self, text="VOICE COMMANDS")
         voice_commands_list.config(
             font=("Helvetica", 24), bd=0, bg="white", activebackground='white', foreground="#223063")
         voice_commands_list.place(relx=0.5, rely=0.05, anchor="center")
 
-        df = pd.read_excel("excelfiles\commands.xlsx")
+        df = pd.read_excel("excelfiles/commands.xlsx")
 
         tree = ttk.Treeview(self)
         tree['show'] = 'headings'
@@ -399,13 +438,13 @@ class SetupPage(tk.Frame):
         self.configure(bg='white')
 
         # WelcomeButton
-        backbtn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
+        back_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
-        backbtn = tk.Button(self, image=backbtn_image, command=lambda: app.change_page_to_n(IntroductionPage, ""),
-                            font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
-        backbtn.image = backbtn_image
-        backbtn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
-                      rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+        back_btn = tk.Button(self, image=back_btn_image, command=lambda: app.change_page_to_n(IntroductionPage, ""),
+                             font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
+        back_btn.image = back_btn_image
+        back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                       rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
 
         pygame.mixer.init()  # todo no volume
 
@@ -484,7 +523,7 @@ class SetupPage(tk.Frame):
 
     def mic_test(self):
         """
-        Functional call for Mic Test Button, calls voice recongition function
+        Functional call for Mic Test Button, calls voice recognition function
         :return: void
         """
         speak("Listening")
@@ -498,13 +537,13 @@ class ExercisePage(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.configure(bg='white')
 
-        backbtn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
+        back_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
-        backbtn = tk.Button(self, image=backbtn_image, command=lambda: app.change_page_to_n(SetupPage, ""),
-                            font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
-        backbtn.image = backbtn_image
-        backbtn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
-                      rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+        back_btn = tk.Button(self, image=back_btn_image, command=lambda: app.change_page_to_n(SetupPage, ""),
+                             font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
+        back_btn.image = back_btn_image
+        back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                       rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
 
         image = Image.open("exercises/curls.png")
         temp_image = image.resize(
@@ -568,6 +607,8 @@ class ExercisePage(tk.Frame):
         app.selected_exercise = exercise_name
         if TEST:
             app.exercise_start_time = datetime.datetime.now()
+            # reset feedback_counter
+            app.negative_feedback_count = 0
         app.frames[VideoPage].update_sources()
         speak("Try to follow the reference video on the right")
 
@@ -600,14 +641,14 @@ class VideoPage(tk.Frame):
             widget.grid(row=0, column=number)
             self.stream_widgets.append(widget)
 
-            backbtn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
+            back_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
                 (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
-            backbtn = tk.Button(self, image=backbtn_image, command=lambda: app.change_page_to_n(ExercisePage, ""),
-                                font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white",
-                                activebackground='white')
-            backbtn.image = backbtn_image
-            backbtn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
-                          rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+            back_btn = tk.Button(self, image=back_btn_image, command=lambda: app.change_page_to_n(ExercisePage, ""),
+                                 font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white",
+                                 activebackground='white')
+            back_btn.image = back_btn_image
+            back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                           rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
 
     def get_sources(self, exercise):
         """
@@ -634,32 +675,32 @@ class Scoreboard(tk.Frame):
         tk.Frame.__init__(self, parent)
 
 
-def write_data(file, data: str):
+def write_data(filepath, data: str):
     """
     Appends data to file, assumes file exists
-    :param file: filepath
+    :param filepath: filepath
     :param data: data to be written
     :return: void
     """
-    with open(file, 'a') as f:
-        f.write(data)
-        f.write('\n')
+    with open(filepath, 'a') as file:
+        file.write(data)
+        file.write('\n')
 
 
 if __name__ == "__main__":
     # initialize app
     app = VFITApp()
-
-    # Data collection metrics file location
-    filepath = "./data/"
-    ct = datetime.datetime.now()
-    id_num = ct.strftime("%y%m%d%H%M")
-    filename = id_num + '.txt'
-    app.filepath = filepath+filename
-    os.makedirs(os.path.dirname(app.filepath), exist_ok=True)
-    with open(app.filepath, "w") as f:
-        f.write(ct.strftime("%m/%d/%y)") + '\n')
-        f.write("Data Begins Below\n")
+    if TEST:
+        # Data collection metrics file location
+        filepath = "./data/"
+        ct = datetime.datetime.now()
+        id_num = ct.strftime("%y%m%d%H%M")
+        filename = id_num + '.txt'
+        app.filepath = filepath + filename
+        os.makedirs(os.path.dirname(app.filepath), exist_ok=True)
+        with open(app.filepath, "w") as f:
+            f.write(ct.strftime("%m/%d/%y") + '\n')
+            f.write("Data Begins Below\n")
 
     engine = pyttsx3.init('sapi5')  # Windows
     voices = engine.getProperty('voices')
