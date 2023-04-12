@@ -158,6 +158,18 @@ def clean_video():
     app.frames[VideoPage].stream_widgets.clear()
 
 
+def write_data(filepath, data: str):
+    """
+    Appends data to file, assumes file exists
+    :param filepath: filepath
+    :param data: data to be written
+    :return: void
+    """
+    with open(filepath, 'a') as file:
+        file.write(data)
+        file.write('\n')
+
+
 def save_user_data():
     """
     Save user data from UI interactions
@@ -681,18 +693,6 @@ class Scoreboard(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-
-
-def write_data(filepath, data: str):
-    """
-    Appends data to file, assumes file exists
-    :param filepath: filepath
-    :param data: data to be written
-    :return: void
-    """
-    with open(filepath, 'a') as file:
-        file.write(data)
-        file.write('\n')
 
 
 if __name__ == "__main__":
