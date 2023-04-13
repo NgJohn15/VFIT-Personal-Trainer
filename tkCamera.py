@@ -9,7 +9,7 @@ class tkCamera(tkinter.Frame):
     parent_app = None
     counter = 0
 
-    def __init__(self, parent, text="", source=0, width=None, height=None, sources=None, exercise_type=None):
+    def __init__(self, parent, source=0, width=None, height=None, sources=None, exercise_type=None):
         """TODO: add docstring"""
 
         super().__init__(parent)
