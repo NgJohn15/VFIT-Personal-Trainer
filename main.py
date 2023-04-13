@@ -12,6 +12,7 @@ from TKCamera import TKCamera
 from PIL import Image, ImageTk
 import pandas as pd
 import textwrap3
+from playsound import playsound
 
 DEBUG = True
 TEST = True
@@ -241,9 +242,15 @@ class VFITApp(ThemedTk):
     jumping_jack_completion_time = None
     lunge_completion_time = None
 
+    def play_sound(self):
+        playsound(os.path.dirname(__file__) + "/sounds/ding.wav", block = False)
+        return
+
     def gamification_data(self, data):
         if data != app.dummy_var:
             if data[1] != app.prev_counter:
+                sound_process = threading.Thread(target = self.play_sound())
+                sound_process.start()
                 if data[1] == 0:
                     app.prev_counter = data[1]
                 elif data[1] % 15 == 0:

@@ -236,7 +236,6 @@ class VideoCapture:
                                     '''print_text(
                                         "Please turn to one of your sides!", frame)'''
                                     self.feedback = "Please turn to one of your sides!"
-                                    cv2.rectangle(frame, (0, 0), (frame.shape[1],frame.shape[0]), color = (0,0,255), thickness = 15)
                                 self.exercise_state, self.exercise_counter = bicep_curls(
                                     joints, angles_arr, self.exercise_state, self.exercise_counter)
                             elif self.exercise_type == "squats":
@@ -244,7 +243,6 @@ class VideoCapture:
                                     '''print_text(
                                         "Please turn to one of your sides!", frame)'''
                                     self.feedback = "Please turn to one of your sides!"
-                                    cv2.rectangle(frame, (0, 0), (frame.shape[1],frame.shape[0]), color = (0,0,255), thickness = 15)
                                 self.exercise_state, self.exercise_counter = squats(
                                     joints, angles_arr, self.exercise_state, self.exercise_counter)
                             elif self.exercise_type == "lunges":
@@ -259,7 +257,6 @@ class VideoCapture:
                             print_text(
                                 "please stand in the center of the frame!", frame)
                             self.feedback = "please stand in the center of the frame!"
-                            cv2.rectangle(frame, (0, 0), (frame.shape[1],frame.shape[0]), color = (0,0,255), thickness = 15)
 
                         new_frame_time = time.time()
                         fps = 1/(new_frame_time-prev_frame_time)
@@ -271,6 +268,9 @@ class VideoCapture:
                         # converting the fps to string so that we can display it on frame
                         # by using putText function
                         fps = str(fps)
+
+                        if self.feedback != "None":
+                            cv2.rectangle(frame, (0, 0), (frame.shape[1],frame.shape[0]), color = (0,0,255), thickness = 15)
 
                         self.get_data()
                         if old_excercise_counter != self.exercise_counter:
