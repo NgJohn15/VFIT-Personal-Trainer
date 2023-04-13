@@ -58,6 +58,12 @@ def get_command():
         return "None"
     return query
 
+def exit_program():
+    save_user_data()
+    threading.Thread(target=speak, args=("exiting V-FIT PT",)).start()
+    if app.current_page == "Video":
+        clean_video()
+    app.destroy()
 
 def get_voice_command() -> None:
     while True:
@@ -530,7 +536,7 @@ class ScoreboardPage(tk.Frame):
         exit_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/exit_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         exit_btn = tk.Button(self, image=exit_btn_image,
-                             command=lambda: [app.change_page_to_n(WelcomePage, ""), increment_click_total()],
+                             command=lambda: [increment_click_total(), exit_program()],
                              font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
         exit_btn.image = exit_btn_image
         exit_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
