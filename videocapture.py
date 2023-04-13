@@ -180,7 +180,7 @@ class VideoCapture:
                 new_frame_time = 0
                 start_time = 0
                 end_time = 0
-
+                old_excercise_counter = 0
                 loopover_temp_arr = 0
                 while self.running:
                     ret, frame = self.vid.read()
@@ -230,12 +230,13 @@ class VideoCapture:
                                             1920, 1080]).astype(int)), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)"""
 
                             frame = frame[:, 480:1440]
-
+                            old_excercise_counter = self.exercise_counter
                             if self.exercise_type == "bicep_curls":
                                 if (joints[13].visibility > 0.9 and joints[14].visibility > 0.9):
                                     '''print_text(
                                         "Please turn to one of your sides!", frame)'''
                                     self.feedback = "Please turn to one of your sides!"
+                                    cv2.rectangle(frame, (0, 0), (frame.shape[1],frame.shape[0]), color = (0,0,255), thickness = 15)
                                 self.exercise_state, self.exercise_counter = bicep_curls(
                                     joints, angles_arr, self.exercise_state, self.exercise_counter)
                             elif self.exercise_type == "squats":
@@ -243,6 +244,7 @@ class VideoCapture:
                                     '''print_text(
                                         "Please turn to one of your sides!", frame)'''
                                     self.feedback = "Please turn to one of your sides!"
+                                    cv2.rectangle(frame, (0, 0), (frame.shape[1],frame.shape[0]), color = (0,0,255), thickness = 15)
                                 self.exercise_state, self.exercise_counter = squats(
                                     joints, angles_arr, self.exercise_state, self.exercise_counter)
                             elif self.exercise_type == "lunges":
@@ -257,6 +259,7 @@ class VideoCapture:
                             print_text(
                                 "please stand in the center of the frame!", frame)
                             self.feedback = "please stand in the center of the frame!"
+                            cv2.rectangle(frame, (0, 0), (frame.shape[1],frame.shape[0]), color = (0,0,255), thickness = 15)
 
                         new_frame_time = time.time()
                         fps = 1/(new_frame_time-prev_frame_time)
@@ -270,13 +273,15 @@ class VideoCapture:
                         fps = str(fps)
 
                         self.get_data()
+                        if old_excercise_counter != self.exercise_counter:
+                            cv2.rectangle(frame, (0, 0), (frame.shape[1],frame.shape[0]), color = (0,255,0), thickness = 15)
 
                         """cv2.putText(frame, text="FPS: " + fps, org=(0, 30),
                                     fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(0, 255, 0), thickness=1)"""
                         cv2.putText(frame, text="Set: " + str(self.exercise_set), org=(
                             850, 30), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(255, 0, 0), thickness=1)
                         cv2.putText(frame, text="Rep: " + str(self.exercise_counter), org=(
-                            720, 30), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(255, 0, 0), thickness=1)
+                            680, 30), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(255, 0, 0), thickness=1)
 
                         frame = cv2.resize(frame, (self.width, self.height))
 

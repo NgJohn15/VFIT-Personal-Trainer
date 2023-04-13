@@ -297,18 +297,18 @@ class VFITApp(ThemedTk):
         self.frames = {}
 
         welcome_frame = WelcomePage(container, self)
-        introduction_frame = IntroductionPage(container, self)
+        introduction_frame = HelpPage(container, self)
         setup_frame = SetupPage(container, self)
         exercise_frame = ExercisePage(container, self)
         video_frame = VideoPage(container, self)
-        scoreboard_frame = Scoreboard(container, self)
+        scoreboard_frame = ScoreboardPage(container, self)
 
         self.frames[WelcomePage] = welcome_frame
-        self.frames[IntroductionPage] = introduction_frame
+        self.frames[HelpPage] = introduction_frame
         self.frames[SetupPage] = setup_frame
         self.frames[ExercisePage] = exercise_frame
         self.frames[VideoPage] = video_frame
-        self.frames[Scoreboard] = scoreboard_frame
+        self.frames[ScoreboardPage] = scoreboard_frame
 
         setup_frame.grid(row=0, column=0, sticky="nsew")
         welcome_frame.grid(row=0, column=0, sticky="nsew")
@@ -362,14 +362,14 @@ class WelcomePage(tk.Frame):
         welcome_image = ImageTk.PhotoImage(temp_image)
         # WelcomeButton
         welcome_btn = tk.Button(self, image=welcome_image, compound="top",
-                                command=lambda: [app.change_page_to_n(IntroductionPage, ""), increment_click_total()],
+                                command=lambda: [app.change_page_to_n(SetupPage, ""), increment_click_total()],
                                 highlightthickness=0, bd=0, bg="white", activebackground='white')
         welcome_btn.image = welcome_image
         welcome_btn.place(relx=.5, rely=.5, anchor='center',
                           relheight=1, relwidth=1)
 
 
-class IntroductionPage(tk.Frame):
+class HelpPage(tk.Frame):
     name = "Introduction"
 
     def __init__(self, parent, controller):
@@ -380,7 +380,91 @@ class IntroductionPage(tk.Frame):
         back_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         back_btn = tk.Button(self, image=back_btn_image,
-                             command=lambda: [app.change_page_to_n(WelcomePage, ""), increment_click_total()],
+                             command=lambda: [app.change_page_to_n(SetupPage, ""), increment_click_total()],
+                             highlightthickness=0, bd=0, bg="white", activebackground='white')
+        back_btn.image = back_btn_image
+        back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                       rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+        voice_commands_list = tk.Label(self, text="Supported Voice Commands")
+        voice_commands_list.config(
+            font=("Helvetica", 24), bd=0, bg="white", activebackground='white', foreground="#223063")
+        voice_commands_list.place(relx=0.5, rely=0.05, anchor="center")
+
+        df = pd.read_excel("excelfiles/commands.xlsx")
+
+        tree = ttk.Treeview(self)
+        tree['show'] = 'headings'
+        style = ttk.Style()
+        style.theme_use("default")
+
+        style.configure("Treeview",
+                        font=("Helvetica", 16),
+                        rowheight=64,
+                        background="black",
+                        foreground="white",
+                        fieldbackground="black")
+
+        style.map("Treeview", background=[('selected', 'grey')])
+        tree["columns"] = list(df.columns)
+
+        style.configure('Treeview.Heading',
+                        background="white",
+                        foreground="#223063",
+                        font=("Helvetica", 16),
+                        rowheight=64,
+                        fieldbackground="white")
+        # Add column headings
+        for col in df.columns:
+            tree.heading(col, text=col)
+            tree.column(col, anchor='center')
+
+        # Add rows to the table
+        for i, row in df.iterrows():
+            temp_arr = []
+            for line in row:
+                temp_arr.append(wrap(line, 32))
+            tree.insert("", "end", values=temp_arr, tags=(
+                'oddrow',) if i % 2 == 0 else ('evenrow',))
+
+        tree_scroll = ttk.Scrollbar(
+            tree, orient="vertical", command=tree.yview)
+        tree_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        style.configure("Vertical.TScrollbar",
+                        background="#6279CA",
+                        fieldbackground="#6279CA",
+                        arrowcolor="white",
+                        troughcolor="#223063",
+                        )
+
+        tree.configure(yscrollcommand=tree_scroll.set)
+        tree.tag_configure('oddrow', background='#223063')
+        tree.tag_configure('evenrow', background='#314792')
+        tree.place(relx=0.5, rely=0.5,
+                   relheight=(1 - (self.winfo_screenheight() // 5) / self.winfo_screenheight()),
+                   relwidth=1 - ((self.winfo_screenwidth() // 5) / self.winfo_screenwidth() * 9 / 16), anchor="center")
+        '''
+        next_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/next_btn.png").convert(mode="RGBA").resize(
+            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
+        next_btn = tk.Button(self, image=next_btn_image,
+                             command=lambda: [app.change_page_to_n(ExercisePage, ""), increment_click_total()],
+                             font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
+        next_btn.image = next_btn_image
+        next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                       rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+                       '''
+        
+class ScoreboardPage(tk.Frame):
+    name = "Introduction"
+
+    def __init__(self, parent, controller):
+        self.controller = controller
+        tk.Frame.__init__(self, parent)
+        self.configure(bg='white')
+
+        back_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
+            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
+        back_btn = tk.Button(self, image=back_btn_image,
+                             command=lambda: [app.change_page_to_n(ExercisePage, ""), increment_click_total()],
                              highlightthickness=0, bd=0, bg="white", activebackground='white')
         back_btn.image = back_btn_image
         back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
@@ -442,16 +526,15 @@ class IntroductionPage(tk.Frame):
         tree.place(relx=0.5, rely=0.5,
                    relheight=(1 - (self.winfo_screenheight() // 5) / self.winfo_screenheight()),
                    relwidth=1 - ((self.winfo_screenwidth() // 5) / self.winfo_screenwidth() * 9 / 16), anchor="center")
-
-        next_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/next_btn.png").convert(mode="RGBA").resize(
+        
+        exit_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/exit_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
-        next_btn = tk.Button(self, image=next_btn_image,
-                             command=lambda: [app.change_page_to_n(SetupPage, ""), increment_click_total()],
+        exit_btn = tk.Button(self, image=exit_btn_image,
+                             command=lambda: [app.change_page_to_n(WelcomePage, ""), increment_click_total()],
                              font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
-        next_btn.image = next_btn_image
-        next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+        exit_btn.image = exit_btn_image
+        exit_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
-
 
 class SetupPage(tk.Frame):
     name = "Setup"
@@ -464,11 +547,22 @@ class SetupPage(tk.Frame):
         back_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         back_btn = tk.Button(self, image=back_btn_image,
-                             command=lambda: [app.change_page_to_n(IntroductionPage, ""), increment_click_total()],
+                             command=lambda: [app.change_page_to_n(WelcomePage, ""), increment_click_total()],
                              font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
         back_btn.image = back_btn_image
         back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+
+
+        help_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/help_btn.png").convert(mode="RGBA").resize(
+            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
+        help_btn = tk.Button(self, image=help_btn_image,
+                             command=lambda: [app.change_page_to_n(HelpPage, ""), increment_click_total()],
+                             font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
+        help_btn.image = help_btn_image
+        help_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                       rely=((self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+
         pygame.mixer.init()
 
         def play_sound(self):
@@ -677,6 +771,18 @@ class VideoPage(tk.Frame):
             back_btn.image = back_btn_image
             back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                            rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+            
+
+            scoreboard_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/scoreboard_btn.png").convert(mode="RGBA").resize(
+                (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
+            scoreboard_btn = tk.Button(self, image=scoreboard_btn_image,
+                                command=lambda: [app.change_page_to_n(ScoreboardPage, ""), increment_click_total()],
+                                font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
+            scoreboard_btn.image = scoreboard_btn_image
+            scoreboard_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+            
+
 
     def get_sources(self, exercise):
         """
@@ -689,13 +795,6 @@ class VideoPage(tk.Frame):
             ("./exercises/" + str(exercise) + ".mp4", "None")
         ]
         return sources
-
-
-class Scoreboard(tk.Frame):
-    name = "Scoreboard"
-
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
 
 
 if __name__ == "__main__":
