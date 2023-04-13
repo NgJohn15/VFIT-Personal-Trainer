@@ -68,7 +68,8 @@ def get_voice_command():
             save_user_data()
 
             speak("exiting V-FIT PT")
-            clean_video()
+            if app.current_page == "Video":
+                clean_video()
             app.destroy()
             engine.stop()
             exit(0)
@@ -660,7 +661,6 @@ class VideoPage(tk.Frame):
 
         # garbage collection
         clean_video()
-        self.stream_widgets.clear()
 
         if DEBUG:
             print("updating to", app.selected_exercise)
@@ -720,6 +720,7 @@ if __name__ == "__main__":
         with open(app.filepath, "w") as f:
             f.write(ct.strftime("%m/%d/%y") + '\n')
             f.write("Data Begins Below\n")
+    engine.setProperty("volume", 0.5)
     speak("Welcome to VFIT PT")
     # run voice recognition thread
     # it has to be `,` in `(queue,)` to create tuple with one value
