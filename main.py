@@ -94,7 +94,10 @@ def get_voice_command() -> None:
                     ExercisePage, "Changing to Exercise Selection")
             elif 'scoreboard' in query:
                 app.total_voice_commands += 1
-                app.change_page_to_n(Scoreboard, "Changing to Scoreboard")
+                app.change_page_to_n(ScoreboardPage, "Changing to Scoreboard")
+            elif 'help' in query:
+                app.total_voice_commands += 1
+                app.change_page_to_n(HelpPage, "Changing to Help Screen")
 
         # Go back
         elif 'go back' in query:
@@ -107,6 +110,10 @@ def get_voice_command() -> None:
                 app.change_page_to_n(SetupPage, "Setup")
             # Video
             elif app.current_page == "Video":
+                app.change_page_to_n(ExercisePage, "Click or say an exercise to begin")
+            elif app.current_page == "Help":
+                app.change_page_to_n(SetupPage, "Setup")
+            elif app.current_page == "Scoreboard":
                 app.change_page_to_n(ExercisePage, "Click or say an exercise to begin")
 
         # Go next
@@ -123,7 +130,7 @@ def get_voice_command() -> None:
                 threading.Thread(target=speak, args=("Select or say an exercise to begin",)).start()
             # Video
             elif app.current_page == "Video":
-                app.change_page_to_n(Scoreboard, "")
+                app.change_page_to_n(ScoreboardPage, "")
 
         # CLICK ON --> BTN
         elif 'click on' in query:
@@ -376,7 +383,7 @@ class WelcomePage(tk.Frame):
 
 
 class HelpPage(tk.Frame):
-    name = "Introduction"
+    name = "Help"
 
     def __init__(self, parent, controller):
         self.controller = controller
@@ -460,7 +467,7 @@ class HelpPage(tk.Frame):
                        '''
         
 class ScoreboardPage(tk.Frame):
-    name = "Introduction"
+    name = "Scoreboard"
 
     def __init__(self, parent, controller):
         self.controller = controller
