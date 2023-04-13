@@ -5,22 +5,27 @@ import tkinter.filedialog
 from videocapture import VideoCapture
 
 
-class tkCamera(tkinter.Frame):
+class TKCamera(tkinter.Frame):
     parent_app = None
     counter = 0
 
-    def __init__(self, parent, text="", source=0, width=None, height=None, sources=None, exercise_type=None):
-        """TODO: add docstring"""
+    def __init__(self, parent, source=0, width=None, height=None, exercise_type=None):
+        """
+        TKCamera initialization
+        :param parent: TKParent object
+        :param source: source of video 0-camera or file to video
+        :param width: width of video player
+        :param height: height of video player
+        :param exercise_type: exercise name
+        """
 
         super().__init__(parent)
 
+        self.photo = None
         self.source = source
         self.width = width
         self.height = height
-        self.other_sources = sources
         self.exercise_type = exercise_type
-
-        # self.window.title(window_title)
 
         self.vid = VideoCapture(self.source, self.width,
                                 self.height, exercise_type=self.exercise_type)
@@ -41,7 +46,10 @@ class tkCamera(tkinter.Frame):
         self.parent_app = app
 
     def update_frame(self):
-        """TODO: add docstring"""
+        """
+        Updates image in video player
+        :return: void
+        """
 
         # widgets in tkinter already have method `update()` so I have to use different name -
 

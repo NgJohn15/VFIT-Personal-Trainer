@@ -6,7 +6,7 @@
 
 import os
 import tkinter
-from tkCamera import tkCamera
+from TKCamera import TKCamera
 
 
 """TODO: add docstring"""
@@ -30,7 +30,7 @@ class App:
 
         columns = 2
         for number, (text, source, exercise_type) in enumerate(sources):
-            widget = tkCamera(self.parent, text, source, width, height, exercise_type = exercise_type)
+            widget = TKCamera(self.parent, text, source, width, height, exercise_type = exercise_type)
             row = number // columns
             col = number % columns
             widget.grid(row=row, column=col)
