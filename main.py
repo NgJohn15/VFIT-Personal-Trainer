@@ -8,7 +8,7 @@ from tkinter import ttk
 from tkinter import *
 import pygame
 from ttkthemes import ThemedTk
-from tkCamera import tkCamera
+from TKCamera import TKCamera
 from PIL import Image, ImageTk
 import pandas as pd
 import textwrap3
@@ -663,7 +663,7 @@ class VideoPage(tk.Frame):
         if DEBUG:
             print("updating to", app.selected_exercise)
         for number, (source, exercise_type) in enumerate(self.get_sources(app.selected_exercise)):
-            widget = tkCamera(self, source, self.width,
+            widget = TKCamera(self, source, self.width,
                               self.height, exercise_type=exercise_type)
             widget.set_app(app)
             widget.grid(row=0, column=number)
