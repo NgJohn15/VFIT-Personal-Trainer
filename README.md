@@ -28,9 +28,9 @@ python -m pip install -r requirements.txt
 
 ## Usage
 
-Start the program by running the main-tk.py file
+Start the program by running the main.py file
 ```
-python main-tk.py
+python main.py
 ```
 
 ## Tools
@@ -46,5 +46,9 @@ Speech to text was handled using [pyttsx3](https://pypi.org/project/pyttsx3/) li
 ## Credits
 
  [John Ng](https://github.com/NgJohn15)
+ 
+ 
  [Danish Tamboli](https://github.com/danishtamboli123)
+ 
+ 
  [Ayush Shrivastava](https://github.com/Ayush2305)
