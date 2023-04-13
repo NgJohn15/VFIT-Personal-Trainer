@@ -720,7 +720,7 @@ if __name__ == "__main__":
         with open(app.filepath, "w") as f:
             f.write(ct.strftime("%m/%d/%y") + '\n')
             f.write("Data Begins Below\n")
-
+    speak("Welcome to VFIT PT")
     # run voice recognition thread
     # it has to be `,` in `(queue,)` to create tuple with one value
     task = threading.Thread(target=get_voice_command, args=())
