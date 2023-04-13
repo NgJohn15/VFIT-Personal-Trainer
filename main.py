@@ -41,6 +41,7 @@ def get_command():
     with sr.Microphone() as source:
         if DEBUG:
             print("Listening...")
+        r.adjust_for_ambient_noise(source)
         r.pause_threshold = 0.6
         audio = r.listen(source)
 
@@ -58,21 +59,20 @@ def get_command():
     return query
 
 
-def get_voice_command():
+def get_voice_command() -> None:
     while True:
         query = get_command().lower()
-
         # exit
-        if 'kill the program' in query:
+        if 'kill the program' in query or 'close the program' in query:
             # save UI data
             save_user_data()
-
-            speak("exiting V-FIT PT")
+            threading.Thread(target=speak, args=("exiting V-FIT PT",)).start()
             if app.current_page == "Video":
                 clean_video()
+            # kill voice recognition thread
+            # Close the GUI
             app.destroy()
-            engine.stop()
-            exit(0)
+            return
 
         # GO TO --> PAGE
         elif 'go to' in query:
@@ -89,8 +89,6 @@ def get_voice_command():
             elif 'scoreboard' in query:
                 app.total_voice_commands += 1
                 app.change_page_to_n(Scoreboard, "Changing to Scoreboard")
-            else:
-                speak("I didn't understand that GO TO command")
 
         # Go back
         elif 'go back' in query:
@@ -116,7 +114,7 @@ def get_voice_command():
                 app.change_page_to_n(ExercisePage, "Select or say an exercise to begin")
             # Exercise Selection
             elif app.current_page == "Exercise":
-                speak("Select or say an exercise to begin")
+                threading.Thread(target=speak, args=("Select or say an exercise to begin",)).start()
             # Video
             elif app.current_page == "Video":
                 app.change_page_to_n(Scoreboard, "")
@@ -130,7 +128,7 @@ def get_voice_command():
                 app.total_voice_commands += 1
                 app.change_page_to_n(ExercisePage, "Exercise selection")
             else:
-                speak("I'm not sure what you want to click on")
+                threading.Thread(target=speak, args=("I'm not sure what you want to click on",)).start()
 
         # SETUP Page
         elif app.current_page == "Setup" and "ready" in query:
@@ -140,26 +138,26 @@ def get_voice_command():
         # WELCOME Page
         elif app.current_page == "Welcome" and "let's begin" in query:
             app.total_voice_commands += 1
-            app.change_page_to_n(SetupPage, "Starting with setup")
+            app.change_page_to_n(SetupPage, "Setup")
 
         # Exercise Page
         elif app.current_page == "Exercise":
             # exercise selection
             if 'bicep curls' in query:
                 app.total_voice_commands += 1
-                speak("Let's do some curls!")
+                threading.Thread(target=speak, args=("Let's do some curls!",)).start()
                 app.frames[ExercisePage].select_exercise('bicep_curls')
             elif 'lunges' in query:
                 app.total_voice_commands += 1
-                speak("Here we go!")
+                threading.Thread(target=speak, args=("Here we go!",)).start()
                 app.frames[ExercisePage].select_exercise('lunges')
             elif 'squats' in query:
                 app.total_voice_commands += 1
-                speak("Let's go!")
+                threading.Thread(target=speak, args=("Let's go!",)).start()
                 app.frames[ExercisePage].select_exercise('squats')
             elif 'jumping jacks' in query:
                 app.total_voice_commands += 1
-                speak("Let's get to it!")
+                threading.Thread(target=speak, args=("Let's get to it!",)).start()
                 app.frames[ExercisePage].select_exercise('jumping_jacks')
         # Video Page
         elif app.current_page == "Video":
@@ -172,8 +170,7 @@ def get_voice_command():
             pass
         # Inform user
         else:
-            speak("I didn't catch that. Please speak slowly and clearly.")
-
+            threading.Thread(target=speak, args=("I didn't catch that. Please speak slowly and clearly.",)).start()
 
 def clean_video():
     # garbage collection
@@ -348,7 +345,7 @@ class VFITApp(ThemedTk):
             clean_video()
 
         self.show_frame(page)
-        speak(msg)
+        threading.Thread(target=speak, args=(msg,)).start()
 
 
 class WelcomePage(tk.Frame):
@@ -486,7 +483,7 @@ class SetupPage(tk.Frame):
             # Set the volume of the sound
             sound.set_volume(new_volume)
             # set TTS volume
-            engine.setProperty("volume", volume_slider.get()/100.0)
+            engine.setProperty("volume", volume_slider.get() / 100.0)
             # Play sound
             sound.play()
 
@@ -709,6 +706,8 @@ if __name__ == "__main__":
 
     # initialize app
     app = VFITApp()
+
+    # Data Collection
     if TEST:
         # Data collection metrics file location
         src_filepath = "./data/"
@@ -721,9 +720,10 @@ if __name__ == "__main__":
             f.write(ct.strftime("%m/%d/%y") + '\n')
             f.write("Data Begins Below\n")
     engine.setProperty("volume", 0.5)
-    speak("Welcome to VFIT PT")
+    threading.Thread(target=speak, args=("Welcome to V-FIT PT",)).start()
     # run voice recognition thread
-    # it has to be `,` in `(queue,)` to create tuple with one value
-    task = threading.Thread(target=get_voice_command, args=())
-    task.start()  # start thread
+    # app.voice_thread = threading.Thread(target=get_voice_command, args=())
+    # event = threading.Event()
+    app.voice_thread = threading.Thread(target=get_voice_command, args=())
+    app.voice_thread.start()  # start thread
     app.mainloop()  # start GUI thread
