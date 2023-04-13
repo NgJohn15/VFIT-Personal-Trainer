@@ -484,6 +484,8 @@ class SetupPage(tk.Frame):
             new_volume = volume_slider.get() / 250
             # Set the volume of the sound
             sound.set_volume(new_volume)
+            # set TTS volume
+            engine.setProperty("volume", volume_slider.get()/100.0)
             # Play sound
             sound.play()
 
@@ -525,7 +527,7 @@ class SetupPage(tk.Frame):
         volume_full_btn.place(relx=0.75, rely=0.5, anchor='center')
         volume_full_btn.configure(bg='white', fg='white')
 
-        text = tk.Label(self, text="SFX Volume")
+        text = tk.Label(self, text="System Volume")
         text.config(font=("Helvetica", 16), bd=0, bg="white", activebackground='white', foreground="#223063")
         text.place(relx=0.5, rely=0.55, anchor='center')
 
@@ -700,6 +702,11 @@ class Scoreboard(tk.Frame):
 
 
 if __name__ == "__main__":
+    # initialize TTS
+    engine = pyttsx3.init('sapi5')  # Windows
+    voices = engine.getProperty('voices')
+    engine.setProperty('voice', voices[0].id)
+
     # initialize app
     app = VFITApp()
     if TEST:
@@ -713,10 +720,6 @@ if __name__ == "__main__":
         with open(app.filepath, "w") as f:
             f.write(ct.strftime("%m/%d/%y") + '\n')
             f.write("Data Begins Below\n")
-
-    engine = pyttsx3.init('sapi5')  # Windows
-    voices = engine.getProperty('voices')
-    engine.setProperty('voice', voices[0].id)
 
     # run voice recognition thread
     # it has to be `,` in `(queue,)` to create tuple with one value
