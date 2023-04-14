@@ -68,6 +68,7 @@ class VideoCapture:
     exercise_state = None
     exercise_counter = 0
     feedback = None
+    previous_feedback = None
     exercise_set = 1
     score = 0
 
@@ -276,9 +277,11 @@ class VideoCapture:
                         # converting the fps to string so that we can display it on frame
                         # by using putText function
                         fps = str(fps)
-
                         if self.feedback != "None":
                             cv2.rectangle(frame, (0, 0), (frame.shape[1],frame.shape[0]), color = (0,0,255), thickness = 15)
+                            if self.feedback != self.previous_feedback and (self.feedback != "please stand in the center of the frame!" or self.feedback != "Please turn to one of your sides!"):
+                                self.score -= 40
+                                self.previous_feedback = self.feedback
 
                         self.get_data()
                         if old_excercise_counter != self.exercise_counter:
