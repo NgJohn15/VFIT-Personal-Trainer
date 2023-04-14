@@ -60,12 +60,14 @@ def get_command():
         return "None"
     return query
 
+
 def exit_program():
     save_user_data()
     threading.Thread(target=speak, args=("exiting V-FIT PT",)).start()
     if app.current_page == "Video":
         clean_video()
     app.destroy()
+
 
 def get_voice_command() -> None:
     while True:
@@ -127,7 +129,6 @@ def get_voice_command() -> None:
             elif app.current_page == "Tutorial2":
                 app.change_page_to_n(TutorialPage1, "")
 
-
         # Go next
         elif 'next' in query:
             app.total_voice_commands += 1
@@ -157,10 +158,11 @@ def get_voice_command() -> None:
                 app.total_voice_commands += 1
                 app.change_page_to_n(TutorialPage, "Let's start with the tutorial. Click the button.")
             elif 'test button' in query and app.current_page == "Tutorial":
-                app.change_page_to_n(TutorialPage1, "Nice job! You clicked the button! Now you can either test the microphone or use voice to go back and next by saying, go back or go next")
+                app.change_page_to_n(TutorialPage1,
+                                     "Nice job! You clicked the button! Now you can either test the microphone or use "
+                                     "voice to go back and next by saying, go back or go next")
             elif 'ready' in query and app.current_page == "Tutorial2":
                 app.change_page_to_n(ExercisePage, "Select or say an exercise to begin")
-            
 
         # SETUP Page
         elif app.current_page == "Setup" and "ready" in query:
@@ -204,6 +206,7 @@ def get_voice_command() -> None:
         else:
             threading.Thread(target=speak, args=("I didn't catch that. Please speak slowly and clearly.",)).start()
 
+
 def clean_video():
     # garbage collection
     for widget in app.frames[VideoPage].stream_widgets:
@@ -235,6 +238,7 @@ def save_user_data():
     write_data(app.filepath, "Voice_Total " + str(app.total_voice_commands))
     write_data(app.filepath, "Mouse_Total " + str(app.total_click_commands))
 
+
 def get_score_load_scoreboard(self):
     data_exercise = self.stream_widgets[0].vid.get_data()
     final_score = data_exercise[4]
@@ -243,7 +247,8 @@ def get_score_load_scoreboard(self):
 
     if not os.path.isfile(scoreboard_directory):
         with open(scoreboard_directory, "w") as template_file:
-            template_file.write(json.dumps({"bicep_curls": [0] * 10, "squats": [0] * 10, "lunges": [0] * 10, "jumping_jacks": [0] * 10}))
+            template_file.write(json.dumps(
+                {"bicep_curls": [0] * 10, "squats": [0] * 10, "lunges": [0] * 10, "jumping_jacks": [0] * 10}))
     else:
         with open(scoreboard_directory, "r+") as template_file:
             score_dict = json.loads(template_file.readline())
@@ -254,7 +259,7 @@ def get_score_load_scoreboard(self):
                     break
             template_file.seek(0)
             template_file.write(json.dumps(score_dict))
-    ScoreboardPage.update_leaderboard(self)
+    app.frames[ScoreboardPage].update_leaderboard()
     app.change_page_to_n(ScoreboardPage, "")
 
 
@@ -283,13 +288,13 @@ class VFITApp(ThemedTk):
     lunge_completion_time = None
 
     def play_sound(self):
-        playsound(os.path.dirname(__file__) + "/sounds/ding.wav", block = False)
+        playsound(os.path.dirname(__file__) + "/sounds/ding.wav", block=False)
         return
 
     def gamification_data(self, data):
         if data[0:5] != app.dummy_var:
             if data[1] != app.prev_counter:
-                sound_process = threading.Thread(target = self.play_sound())
+                sound_process = threading.Thread(target=self.play_sound())
                 sound_process.start()
                 if data[1] == 0:
                     app.prev_counter = data[1]
@@ -363,8 +368,8 @@ class VFITApp(ThemedTk):
         video_frame = VideoPage(container, self)
         scoreboard_frame = ScoreboardPage(container, self)
         tutorial_frame = TutorialPage(container, self)
-        tutorial1_frame = TutorialPage1(container,self)
-        tutorial2_frame = TutorialPage2(container,self)
+        tutorial1_frame = TutorialPage1(container, self)
+        tutorial2_frame = TutorialPage2(container, self)
 
         self.frames[WelcomePage] = welcome_frame
         self.frames[HelpPage] = introduction_frame
@@ -511,17 +516,8 @@ class HelpPage(tk.Frame):
         tree.place(relx=0.5, rely=0.5,
                    relheight=(1 - (self.winfo_screenheight() // 5) / self.winfo_screenheight()),
                    relwidth=1 - ((self.winfo_screenwidth() // 5) / self.winfo_screenwidth() * 9 / 16), anchor="center")
-        '''
-        next_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/next_btn.png").convert(mode="RGBA").resize(
-            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
-        next_btn = tk.Button(self, image=next_btn_image,
-                             command=lambda: [app.change_page_to_n(ExercisePage, ""), increment_click_total()],
-                             font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
-        next_btn.image = next_btn_image
-        next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
-                       rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
-                       '''
-        
+
+
 class ScoreboardPage(tk.Frame):
     name = "Scoreboard"
 
@@ -544,9 +540,13 @@ class ScoreboardPage(tk.Frame):
         voice_commands_list.place(relx=0.5, rely=0.05, anchor="center")
 
         scoreboard_directory = "data/leaderboard_data.txt"
+
+        # creates an empty Data folder should one not exist
+        os.makedirs(os.path.dirname("./data/"), exist_ok=True)
         if not os.path.isfile(scoreboard_directory):
             with open(scoreboard_directory, "w") as template_file:
-                template_file.write(json.dumps({"bicep_curls": [0] * 10, "squats": [0] * 10, "lunges": [0] * 10, "jumping_jacks": [0] * 10}))
+                template_file.write(json.dumps(
+                    {"bicep_curls": [0] * 10, "squats": [0] * 10, "lunges": [0] * 10, "jumping_jacks": [0] * 10}))
 
         with open(scoreboard_directory, "r+") as template_file:
             score_dict = json.loads(template_file.readline())
@@ -554,87 +554,11 @@ class ScoreboardPage(tk.Frame):
         temp_data = []
         for index, value in enumerate(score_dict["bicep_curls"]):
             temp_arr = []
-            for key in list(score_dict.keys()): 
+            for key in list(score_dict.keys()):
                 temp_arr.append(str(score_dict[key][index]))
-            temp_data.append([str(index +1)] + temp_arr)
-            #print([index + 1] + score_dict[key][index] for key in list(score_dict.keys()))
-            #temp_data.append([index + 1] + score_dict[key][index] for key in score_dict.keys()) 
-        df_score = pd.DataFrame(temp_data, columns=['Position', "Bicep Curls", "Squats", "Lunges", "Jumping Jacks"])
-
-        tree = ttk.Treeview(self)
-        tree['show'] = 'headings'
-        style = ttk.Style()
-        style.theme_use("default")
-
-        style.configure("Treeview",
-                        font=("Helvetica", 16),
-                        rowheight=64,
-                        background="#223063",
-                        foreground="white",
-                        fieldbackground="#223063")
-
-        style.map("Treeview", background=[('selected', 'grey')])
-        tree["columns"] = list(df_score.columns)
-
-        style.configure('Treeview.Heading',
-                        background="white",
-                        foreground="#223063",
-                        font=("Helvetica", 16),
-                        rowheight=64,
-                        fieldbackground="white")
-        # Add column headings
-        for col in df_score.columns:  
-            tree.heading(col, text=col)
-            tree.column(col, anchor='center')
-
-        # Add rows to the table
-        for i, row in df_score.iterrows():
-            temp_arr = []
-            for line in row:
-                temp_arr.append(wrap(line, 32))
-            tree.insert("", "end", values=temp_arr, tags=(
-                'oddrow',) if i % 2 == 0 else ('evenrow',))
-
-        tree_scroll = ttk.Scrollbar(
-            tree, orient="vertical", command=tree.yview)
-        tree_scroll.pack(side=tk.RIGHT, fill=tk.Y)
-        style.configure("Vertical.TScrollbar",
-                        background="#6279CA",
-                        fieldbackground="#6279CA",
-                        arrowcolor="white",
-                        troughcolor="#223063",
-                        )
-
-        tree.configure(yscrollcommand=tree_scroll.set)
-        tree.tag_configure('oddrow', background='#223063')
-        tree.tag_configure('evenrow', background='#314792')
-        tree.place(relx=0.5, rely=0.5,
-                   relheight=(1 - (self.winfo_screenheight() // 5) / self.winfo_screenheight()),
-                   relwidth=1 - ((self.winfo_screenwidth() // 5) / self.winfo_screenwidth() * 9 / 16), anchor="center")
-
-        exit_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/exit_btn.png").convert(mode="RGBA").resize(
-            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
-        exit_btn = tk.Button(self, image=exit_btn_image,
-                             command=lambda: [increment_click_total(), exit_program()],
-                             font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
-        exit_btn.image = exit_btn_image
-        exit_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
-                       rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
-        
-    def update_leaderboard(self):
-        
-        scoreboard_directory = "data/leaderboard_data.txt"
-        with open(scoreboard_directory, "r+") as template_file:
-            score_dict = json.loads(template_file.readline())
-
-        temp_data = []
-        for index, value in enumerate(score_dict["bicep_curls"]):
-            temp_arr = []
-            for key in list(score_dict.keys()): 
-                temp_arr.append(str(score_dict[key][index]))
-            temp_data.append([str(index +1)] + temp_arr)
-            #print([index + 1] + score_dict[key][index] for key in list(score_dict.keys()))
-            #temp_data.append([index + 1] + score_dict[key][index] for key in score_dict.keys()) 
+            temp_data.append([str(index + 1)] + temp_arr)
+            # print([index + 1] + score_dict[key][index] for key in list(score_dict.keys()))
+            # temp_data.append([index + 1] + score_dict[key][index] for key in score_dict.keys())
         df_score = pd.DataFrame(temp_data, columns=['Position', "Bicep Curls", "Squats", "Lunges", "Jumping Jacks"])
 
         tree = ttk.Treeview(self)
@@ -688,6 +612,80 @@ class ScoreboardPage(tk.Frame):
                    relheight=(1 - (self.winfo_screenheight() // 5) / self.winfo_screenheight()),
                    relwidth=1 - ((self.winfo_screenwidth() // 5) / self.winfo_screenwidth() * 9 / 16), anchor="center")
 
+        exit_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/exit_btn.png").convert(mode="RGBA").resize(
+            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
+        exit_btn = tk.Button(self, image=exit_btn_image,
+                             command=lambda: [increment_click_total(), exit_program()],
+                             font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
+        exit_btn.image = exit_btn_image
+        exit_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                       rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+
+    def update_leaderboard(self):
+        scoreboard_directory = "data/leaderboard_data.txt"
+        with open(scoreboard_directory, "r+") as template_file:
+            score_dict = json.loads(template_file.readline())
+
+        temp_data = []
+        for index, value in enumerate(score_dict["bicep_curls"]):
+            temp_arr = []
+            for key in list(score_dict.keys()):
+                temp_arr.append(str(score_dict[key][index]))
+            temp_data.append([str(index + 1)] + temp_arr)
+        df_score = pd.DataFrame(temp_data, columns=['Position', "Bicep Curls", "Squats", "Lunges", "Jumping Jacks"])
+
+        tree = ttk.Treeview(self)
+        tree['show'] = 'headings'
+        style = ttk.Style()
+        style.theme_use("default")
+
+        style.configure("Treeview",
+                        font=("Helvetica", 16),
+                        rowheight=64,
+                        background="#223063",
+                        foreground="white",
+                        fieldbackground="#223063")
+
+        style.map("Treeview", background=[('selected', 'grey')])
+        tree["columns"] = list(df_score.columns)
+
+        style.configure('Treeview.Heading',
+                        background="white",
+                        foreground="#223063",
+                        font=("Helvetica", 16),
+                        rowheight=64,
+                        fieldbackground="white")
+        # Add column headings
+        for col in df_score.columns:
+            tree.heading(col, text=col)
+            tree.column(col, anchor='center')
+
+        # Add rows to the table
+        for i, row in df_score.iterrows():
+            temp_arr = []
+            for line in row:
+                temp_arr.append(wrap(line, 32))
+            tree.insert("", "end", values=temp_arr, tags=(
+                'oddrow',) if i % 2 == 0 else ('evenrow',))
+
+        tree_scroll = ttk.Scrollbar(
+            tree, orient="vertical", command=tree.yview)
+        tree_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        style.configure("Vertical.TScrollbar",
+                        background="#6279CA",
+                        fieldbackground="#6279CA",
+                        arrowcolor="white",
+                        troughcolor="#223063",
+                        )
+
+        tree.configure(yscrollcommand=tree_scroll.set)
+        tree.tag_configure('oddrow', background='#223063')
+        tree.tag_configure('evenrow', background='#314792')
+        tree.place(relx=0.5, rely=0.5,
+                   relheight=(1 - (self.winfo_screenheight() // 5) / self.winfo_screenheight()),
+                   relwidth=1 - ((self.winfo_screenwidth() // 5) / self.winfo_screenwidth() * 9 / 16), anchor="center")
+
+
 class SetupPage(tk.Frame):
     name = "Setup"
 
@@ -704,7 +702,6 @@ class SetupPage(tk.Frame):
         back_btn.image = back_btn_image
         back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
-
 
         help_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/help_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
@@ -777,10 +774,14 @@ class SetupPage(tk.Frame):
 
         tutorial_image = ImageTk.PhotoImage(Image.open("ui_elements/tutorial_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 10, self.winfo_screenheight() // 10)))
-        tutorial_btn = tk.Button(self, text="Click here for a tutorial! \n or \n Say 'Click on tutorial button'", image=tutorial_image, compound='top',
-                                command=lambda: [app.change_page_to_n(TutorialPage, "Let's start with the tutorial. Click the button."), increment_click_total()], font=("Helvetica", 16),
-                                highlightthickness=0, bd=0,
-                                bg="white", activebackground='white', foreground="#223063")
+        tutorial_btn = tk.Button(self, text="Click here for a tutorial! \n or \n Say 'Click on tutorial button'",
+                                 image=tutorial_image, compound='top',
+                                 command=lambda: [app.change_page_to_n(TutorialPage,
+                                                                       "Let's start with the tutorial. Click the "
+                                                                       "button."),
+                                                  increment_click_total()], font=("Helvetica", 16),
+                                 highlightthickness=0, bd=0,
+                                 bg="white", activebackground='white', foreground="#223063")
         tutorial_btn.image = tutorial_image
         tutorial_btn.place(relx=.5, rely=0.75, anchor='center')
 
@@ -792,6 +793,7 @@ class SetupPage(tk.Frame):
         next_btn.image = next_btn_image
         next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+
 
 class TutorialPage(tk.Frame):
     name = "Tutorial"
@@ -809,31 +811,38 @@ class TutorialPage(tk.Frame):
         back_btn.image = back_btn_image
         back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
-        
+
         print_text = tk.Label(self, text="Try saying 'Click on test button'")
         print_text.config(
             font=("Helvetica", 24), bd=0, bg="white", activebackground='white', foreground="#223063")
         print_text.place(relx=0.5, rely=0.25, anchor="center")
-        
+
         test_image = ImageTk.PhotoImage(Image.open("ui_elements/test_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 5, self.winfo_screenheight() // 5)))
         test_btn = tk.Button(self, text="Test button!", image=test_image, compound='top',
-                                command=lambda: [app.change_page_to_n(TutorialPage1, "Nice job! You clicked the button! Now you can either test the microphone or use voice to go back and next by saying, go back or go next"), increment_click_total()], font=("Helvetica", 16),
-                                highlightthickness=0, bd=0,
-                                bg="white", activebackground='white', foreground="#223063")
+                             command=lambda: [app.change_page_to_n(TutorialPage1,
+                                                                   "Nice job! You clicked the button! Now you can "
+                                                                   "either test the microphone or use voice to go "
+                                                                   "back and next by saying, go back or go next"),
+                                              increment_click_total()], font=("Helvetica", 16),
+                             highlightthickness=0, bd=0,
+                             bg="white", activebackground='white', foreground="#223063")
         test_btn.image = test_image
         test_btn.place(relx=.5, rely=0.5, anchor='center')
-
 
         next_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/next_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         next_btn = tk.Button(self, image=next_btn_image,
-                             command=lambda: [app.change_page_to_n(TutorialPage1, "Now you can either test the microphone or use voice to go back and next"), increment_click_total()],
+                             command=lambda: [app.change_page_to_n(TutorialPage1,
+                                                                   "Now you can either test the microphone or use "
+                                                                   "voice to go back and next"),
+                                              increment_click_total()],
                              font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
         next_btn.image = next_btn_image
         next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
-        
+
+
 class TutorialPage1(tk.Frame):
     name = "Tutorial1"
 
@@ -850,26 +859,27 @@ class TutorialPage1(tk.Frame):
         back_btn.image = back_btn_image
         back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
-        
+
         mic_image = ImageTk.PhotoImage(Image.open("ui_elements/mic_test.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 5, self.winfo_screenheight() // 5)))
         mic_rec_btn = tk.Button(self, text="Test Microphone!", image=mic_image, compound='top',
-                                command=lambda: [(self.mic_test(), ""), increment_click_total()], font=("Helvetica", 16),
+                                command=lambda: [(self.mic_test(), ""), increment_click_total()],
+                                font=("Helvetica", 16),
                                 highlightthickness=0, bd=0,
                                 bg="white", activebackground='white', foreground="#223063")
         mic_rec_btn.image = mic_image
         mic_rec_btn.place(relx=.5, rely=0.5, anchor='center')
 
-
         next_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/next_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         next_btn = tk.Button(self, image=next_btn_image,
-                             command=lambda: [app.change_page_to_n(TutorialPage2, "Are you ready to get Fit?!"), increment_click_total()],
+                             command=lambda: [app.change_page_to_n(TutorialPage2, "Are you ready to get Fit?!"),
+                                              increment_click_total()],
                              font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
         next_btn.image = next_btn_image
         next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
-        
+
     def mic_test(self):
         """
         Functional call for Mic Test Button, calls voice recognition function
@@ -877,6 +887,7 @@ class TutorialPage1(tk.Frame):
         """
         speak("Listening")
         speak("You said " + get_command())
+
 
 class TutorialPage2(tk.Frame):
     name = "Tutorial2"
@@ -894,16 +905,16 @@ class TutorialPage2(tk.Frame):
         back_btn.image = back_btn_image
         back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
-        
+
         ready_image = ImageTk.PhotoImage(Image.open("ui_elements/start_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 5, self.winfo_screenheight() // 5)))
         ready_btn = tk.Button(self, text="I'm Ready!", image=ready_image, compound='top',
-                                command=lambda: [app.change_page_to_n(ExercisePage, ""), increment_click_total()], font=("Helvetica", 16),
-                                highlightthickness=0, bd=0,
-                                bg="white", activebackground='white', foreground="#223063")
+                              command=lambda: [app.change_page_to_n(ExercisePage, ""), increment_click_total()],
+                              font=("Helvetica", 16),
+                              highlightthickness=0, bd=0,
+                              bg="white", activebackground='white', foreground="#223063")
         ready_btn.image = ready_image
         ready_btn.place(relx=.5, rely=0.5, anchor='center')
-
 
         next_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/next_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
@@ -1036,18 +1047,18 @@ class VideoPage(tk.Frame):
             back_btn.image = back_btn_image
             back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                            rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
-            
 
-            scoreboard_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/scoreboard_btn.png").convert(mode="RGBA").resize(
-                (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
+            scoreboard_btn_image = ImageTk.PhotoImage(
+                Image.open("ui_elements/scoreboard_btn.png").convert(mode="RGBA").resize(
+                    (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
             scoreboard_btn = tk.Button(self, image=scoreboard_btn_image,
-                                command=lambda: [get_score_load_scoreboard(self), increment_click_total()],
-                                font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
+                                       command=lambda: [get_score_load_scoreboard(self), increment_click_total()],
+                                       font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white",
+                                       activebackground='white')
             scoreboard_btn.image = scoreboard_btn_image
             scoreboard_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
-                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
-            
-
+                                 rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()),
+                                 anchor='center')
 
     def get_sources(self, exercise):
         """
@@ -1086,8 +1097,6 @@ if __name__ == "__main__":
     engine.setProperty("volume", 0.5)
     threading.Thread(target=speak, args=("Welcome to V-FIT PT",)).start()
     # run voice recognition thread
-    # app.voice_thread = threading.Thread(target=get_voice_command, args=())
-    # event = threading.Event()
     app.voice_thread = threading.Thread(target=get_voice_command, args=())
     app.voice_thread.start()  # start thread
     app.mainloop()  # start GUI thread
