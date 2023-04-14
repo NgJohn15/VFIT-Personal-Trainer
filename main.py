@@ -120,6 +120,13 @@ def get_voice_command() -> None:
                 app.change_page_to_n(SetupPage, "Setup")
             elif app.current_page == "Scoreboard":
                 app.change_page_to_n(ExercisePage, "Click or say an exercise to begin")
+            elif app.current_page == "Tutorial":
+                app.change_page_to_n(SetupPage, "Setup")
+            elif app.current_page == "Tutorial1":
+                app.change_page_to_n(TutorialPage, "")
+            elif app.current_page == "Tutorial2":
+                app.change_page_to_n(TutorialPage1, "")
+
 
         # Go next
         elif 'next' in query:
@@ -136,17 +143,24 @@ def get_voice_command() -> None:
             # Video
             elif app.current_page == "Video":
                 app.change_page_to_n(ScoreboardPage, "")
+            elif app.current_page == "Tutorial":
+                app.change_page_to_n(TutorialPage1, "")
+            elif app.current_page == "Tutorial1":
+                app.change_page_to_n(TutorialPage2, "Are you ready to get Fit?!")
 
         # CLICK ON --> BTN
         elif 'click on' in query:
             if 'welcome button' in query and app.current_page == "Welcome":
                 app.total_voice_commands += 1
                 app.change_page_to_n(SetupPage, "Setup")
-            elif 'ready button' in query and app.current_page == "Setup":
+            elif 'tutorial button' in query and app.current_page == "Setup":
                 app.total_voice_commands += 1
-                app.change_page_to_n(ExercisePage, "Exercise selection")
-            else:
-                threading.Thread(target=speak, args=("I'm not sure what you want to click on",)).start()
+                app.change_page_to_n(TutorialPage, "Let's start with the tutorial. Click the button.")
+            elif 'test button' in query and app.current_page == "Tutorial":
+                app.change_page_to_n(TutorialPage1, "Nice job! You clicked the button! Now you can either test the microphone or use voice to go back and next by saying, go back or go next")
+            elif 'ready' in query and app.current_page == "Tutorial2":
+                app.change_page_to_n(ExercisePage, "Select or say an exercise to begin")
+            
 
         # SETUP Page
         elif app.current_page == "Setup" and "ready" in query:
@@ -348,6 +362,9 @@ class VFITApp(ThemedTk):
         exercise_frame = ExercisePage(container, self)
         video_frame = VideoPage(container, self)
         scoreboard_frame = ScoreboardPage(container, self)
+        tutorial_frame = TutorialPage(container, self)
+        tutorial1_frame = TutorialPage1(container,self)
+        tutorial2_frame = TutorialPage2(container,self)
 
         self.frames[WelcomePage] = welcome_frame
         self.frames[HelpPage] = introduction_frame
@@ -355,6 +372,9 @@ class VFITApp(ThemedTk):
         self.frames[ExercisePage] = exercise_frame
         self.frames[VideoPage] = video_frame
         self.frames[ScoreboardPage] = scoreboard_frame
+        self.frames[TutorialPage] = tutorial_frame
+        self.frames[TutorialPage1] = tutorial1_frame
+        self.frames[TutorialPage2] = tutorial2_frame
 
         setup_frame.grid(row=0, column=0, sticky="nsew")
         welcome_frame.grid(row=0, column=0, sticky="nsew")
@@ -362,6 +382,9 @@ class VFITApp(ThemedTk):
         exercise_frame.grid(row=0, column=0, sticky="nsew")
         video_frame.grid(row=0, column=0, sticky="nsew")
         scoreboard_frame.grid(row=0, column=0, sticky="nsew")
+        tutorial_frame.grid(row=0, column=0, sticky="nsew")
+        tutorial1_frame.grid(row=0, column=0, sticky="nsew")
+        tutorial2_frame.grid(row=0, column=0, sticky="nsew")
 
         self.current_page = WelcomePage.name
         self.show_frame(WelcomePage)
@@ -524,6 +547,7 @@ class ScoreboardPage(tk.Frame):
         if not os.path.isfile(scoreboard_directory):
             with open(scoreboard_directory, "w") as template_file:
                 template_file.write(json.dumps({"bicep_curls": [0] * 10, "squats": [0] * 10, "lunges": [0] * 10, "jumping_jacks": [0] * 10}))
+
         with open(scoreboard_directory, "r+") as template_file:
             score_dict = json.loads(template_file.readline())
 
@@ -751,14 +775,14 @@ class SetupPage(tk.Frame):
         text.config(font=("Helvetica", 16), bd=0, bg="white", activebackground='white', foreground="#223063")
         text.place(relx=0.5, rely=0.55, anchor='center')
 
-        mic_image = ImageTk.PhotoImage(Image.open("ui_elements/mic_test.png").convert(mode="RGBA").resize(
+        tutorial_image = ImageTk.PhotoImage(Image.open("ui_elements/tutorial_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 10, self.winfo_screenheight() // 10)))
-        mic_rec_btn = tk.Button(self, text="Tutorial Page", image=mic_image, compound='top',
-                                command=lambda: [app.change_page_to_n(TutorialPage, ""), increment_click_total()], font=("Helvetica", 16),
+        tutorial_btn = tk.Button(self, text="Click here for a tutorial! \n or \n Say 'Click on tutorial button'", image=tutorial_image, compound='top',
+                                command=lambda: [app.change_page_to_n(TutorialPage, "Let's start with the tutorial. Click the button."), increment_click_total()], font=("Helvetica", 16),
                                 highlightthickness=0, bd=0,
                                 bg="white", activebackground='white', foreground="#223063")
-        mic_rec_btn.image = mic_image
-        mic_rec_btn.place(relx=.5, rely=0.75, anchor='center')
+        tutorial_btn.image = tutorial_image
+        tutorial_btn.place(relx=.5, rely=0.75, anchor='center')
 
         next_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/next_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
@@ -769,6 +793,83 @@ class SetupPage(tk.Frame):
         next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
 
+class TutorialPage(tk.Frame):
+    name = "Tutorial"
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.configure(bg='white')
+
+        # WelcomeButton
+        back_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
+            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
+        back_btn = tk.Button(self, image=back_btn_image,
+                             command=lambda: [app.change_page_to_n(SetupPage, ""), increment_click_total()],
+                             font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
+        back_btn.image = back_btn_image
+        back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                       rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+        
+        print_text = tk.Label(self, text="Try saying 'Click on test button'")
+        print_text.config(
+            font=("Helvetica", 24), bd=0, bg="white", activebackground='white', foreground="#223063")
+        print_text.place(relx=0.5, rely=0.25, anchor="center")
+        
+        test_image = ImageTk.PhotoImage(Image.open("ui_elements/test_btn.png").convert(mode="RGBA").resize(
+            (self.winfo_screenheight() // 5, self.winfo_screenheight() // 5)))
+        test_btn = tk.Button(self, text="Test button!", image=test_image, compound='top',
+                                command=lambda: [app.change_page_to_n(TutorialPage1, "Nice job! You clicked the button! Now you can either test the microphone or use voice to go back and next by saying, go back or go next"), increment_click_total()], font=("Helvetica", 16),
+                                highlightthickness=0, bd=0,
+                                bg="white", activebackground='white', foreground="#223063")
+        test_btn.image = test_image
+        test_btn.place(relx=.5, rely=0.5, anchor='center')
+
+
+        next_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/next_btn.png").convert(mode="RGBA").resize(
+            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
+        next_btn = tk.Button(self, image=next_btn_image,
+                             command=lambda: [app.change_page_to_n(TutorialPage1, "Now you can either test the microphone or use voice to go back and next"), increment_click_total()],
+                             font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
+        next_btn.image = next_btn_image
+        next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                       rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+        
+class TutorialPage1(tk.Frame):
+    name = "Tutorial1"
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.configure(bg='white')
+
+        # WelcomeButton
+        back_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
+            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
+        back_btn = tk.Button(self, image=back_btn_image,
+                             command=lambda: [app.change_page_to_n(TutorialPage, ""), increment_click_total()],
+                             font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
+        back_btn.image = back_btn_image
+        back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                       rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+        
+        mic_image = ImageTk.PhotoImage(Image.open("ui_elements/mic_test.png").convert(mode="RGBA").resize(
+            (self.winfo_screenheight() // 5, self.winfo_screenheight() // 5)))
+        mic_rec_btn = tk.Button(self, text="Test Microphone!", image=mic_image, compound='top',
+                                command=lambda: [(self.mic_test(), ""), increment_click_total()], font=("Helvetica", 16),
+                                highlightthickness=0, bd=0,
+                                bg="white", activebackground='white', foreground="#223063")
+        mic_rec_btn.image = mic_image
+        mic_rec_btn.place(relx=.5, rely=0.5, anchor='center')
+
+
+        next_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/next_btn.png").convert(mode="RGBA").resize(
+            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
+        next_btn = tk.Button(self, image=next_btn_image,
+                             command=lambda: [app.change_page_to_n(TutorialPage2, "Are you ready to get Fit?!"), increment_click_total()],
+                             font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
+        next_btn.image = next_btn_image
+        next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                       rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+        
     def mic_test(self):
         """
         Functional call for Mic Test Button, calls voice recognition function
@@ -776,6 +877,42 @@ class SetupPage(tk.Frame):
         """
         speak("Listening")
         speak("You said " + get_command())
+
+class TutorialPage2(tk.Frame):
+    name = "Tutorial2"
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.configure(bg='white')
+
+        # WelcomeButton
+        back_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
+            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
+        back_btn = tk.Button(self, image=back_btn_image,
+                             command=lambda: [app.change_page_to_n(TutorialPage1, ""), increment_click_total()],
+                             font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
+        back_btn.image = back_btn_image
+        back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                       rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+        
+        ready_image = ImageTk.PhotoImage(Image.open("ui_elements/start_btn.png").convert(mode="RGBA").resize(
+            (self.winfo_screenheight() // 5, self.winfo_screenheight() // 5)))
+        ready_btn = tk.Button(self, text="I'm Ready!", image=ready_image, compound='top',
+                                command=lambda: [app.change_page_to_n(ExercisePage, ""), increment_click_total()], font=("Helvetica", 16),
+                                highlightthickness=0, bd=0,
+                                bg="white", activebackground='white', foreground="#223063")
+        ready_btn.image = ready_image
+        ready_btn.place(relx=.5, rely=0.5, anchor='center')
+
+
+        next_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/next_btn.png").convert(mode="RGBA").resize(
+            (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
+        next_btn = tk.Button(self, image=next_btn_image,
+                             command=lambda: [app.change_page_to_n(ExercisePage, ""), increment_click_total()],
+                             font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
+        next_btn.image = next_btn_image
+        next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
+                       rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
 
 
 class ExercisePage(tk.Frame):
