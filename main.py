@@ -100,6 +100,9 @@ def get_voice_command() -> None:
             elif 'help' in query:
                 app.total_voice_commands += 1
                 app.change_page_to_n(HelpPage, "Changing to Help Screen")
+            elif "tutorial" in query:
+                app.total_voice_commands += 1
+                app.change_page_to_n(TutorialPage, "Let's start with the tutorial. Click the button.")
 
         # Go back
         elif 'go back' in query:
@@ -518,6 +521,9 @@ class ScoreboardPage(tk.Frame):
         voice_commands_list.place(relx=0.5, rely=0.05, anchor="center")
 
         scoreboard_directory = "data/leaderboard_data.txt"
+        if not os.path.isfile(scoreboard_directory):
+            with open(scoreboard_directory, "w") as template_file:
+                template_file.write(json.dumps({"bicep_curls": [0] * 10, "squats": [0] * 10, "lunges": [0] * 10, "jumping_jacks": [0] * 10}))
         with open(scoreboard_directory, "r+") as template_file:
             score_dict = json.loads(template_file.readline())
 
@@ -747,8 +753,8 @@ class SetupPage(tk.Frame):
 
         mic_image = ImageTk.PhotoImage(Image.open("ui_elements/mic_test.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 10, self.winfo_screenheight() // 10)))
-        mic_rec_btn = tk.Button(self, text="TEST MIC", image=mic_image, compound='top',
-                                command=lambda: [self.mic_test(), increment_click_total()], font=("Helvetica", 16),
+        mic_rec_btn = tk.Button(self, text="Tutorial Page", image=mic_image, compound='top',
+                                command=lambda: [app.change_page_to_n(TutorialPage, ""), increment_click_total()], font=("Helvetica", 16),
                                 highlightthickness=0, bd=0,
                                 bg="white", activebackground='white', foreground="#223063")
         mic_rec_btn.image = mic_image
