@@ -69,9 +69,10 @@ class VideoCapture:
     exercise_counter = 0
     feedback = None
     exercise_set = 1
+    score = 0
 
     def get_data(self):
-        return [self.exercise_state, self.exercise_counter, self.feedback, self.exercise_set]
+        return [self.exercise_state, self.exercise_counter, self.feedback, self.exercise_set, self.score, self.exercise_type]
 
     def process(self):
         """TODO: add docstring"""
@@ -104,6 +105,7 @@ class VideoCapture:
                     elif angles_arr_stream[0] < 45 and state == "down" and angles_arr_stream[2] < 10:
                         state = "up"
                         count += 1
+                        self.score +=100
                     elif angles_arr_stream[2] > 10:
                         self.feedback = "Keep your upper arm stationary and your elbow close to your body!"
                 elif (joint_arr[13].visibility >= 0.9):
@@ -112,6 +114,7 @@ class VideoCapture:
                     elif angles_arr_stream[1] < 45 and state == "down" and angles_arr_stream[3] < 10:
                         state = "up"
                         count += 1
+                        self.score +=100
                     elif angles_arr_stream[3] > 10:
                         self.feedback = "Keep your upper arm stationary and your elbow close to your body!"
                 return state, count
@@ -123,6 +126,7 @@ class VideoCapture:
                     elif angles_arr_stream[6] < 100 and state == "up" and (angles_arr_stream[2] > 60 and angles_arr_stream[2] < 120) and (angles_arr_stream[4] < 160 and angles_arr_stream[4] > 50):
                         state = "down"
                         count += 1
+                        self.score +=100
                     elif (angles_arr_stream[2] < 60 or angles_arr_stream[2] > 120):
                         self.feedback = "Keep your arms extended, perpendicular to your body!"
                     elif (angles_arr_stream[6] < 100 and state == "up" and (angles_arr_stream[4] > 160 or angles_arr_stream[4] < 50)):
@@ -134,6 +138,7 @@ class VideoCapture:
                     elif angles_arr_stream[7] < 100 and state == "up" and (angles_arr_stream[3] > 60 and angles_arr_stream[3] < 120) and (angles_arr_stream[5] < 160 and angles_arr_stream[5] > 50):
                         state = "down"
                         count += 1
+                        self.score +=100
                     elif (angles_arr_stream[3] < 60 or angles_arr_stream[3] > 120):
                         self.feedback = "Keep your arms extended, perpendicular to your body!"
                     elif (angles_arr_stream[7] < 100 and state == "up" and (angles_arr_stream[5] > 160 or angles_arr_stream[5] < 50)):
@@ -147,6 +152,7 @@ class VideoCapture:
                     elif ((angles_arr_stream[6] < 100 and angles_arr_stream[7] < 100) and state == "up" and angles_arr_stream[2] < 15 and angles_arr_stream[4] > 160):
                         state = "down"
                         count += 1
+                        self.score +=100
                     elif ((angles_arr_stream[6] < 140 and angles_arr_stream[6] > 100) or (angles_arr_stream[7] < 140 and angles_arr_stream[7] > 100)):
                         self.feedback = "Go down deeper!"
                 elif (joint_arr[25].visibility >= 0.9):
@@ -155,6 +161,7 @@ class VideoCapture:
                     elif ((angles_arr_stream[6] < 100 and angles_arr_stream[7] < 100) and state == "up" and angles_arr_stream[3] < 15 and angles_arr_stream[5] > 160):
                         state = "down"
                         count += 1
+                        self.score +=100
                     elif ((angles_arr_stream[6] < 140 and angles_arr_stream[6] > 100) or (angles_arr_stream[7] < 140 and angles_arr_stream[7] > 100)):
                         self.feedback = "Go down deeper!"
                 return state, count
@@ -166,6 +173,7 @@ class VideoCapture:
                     elif (angles_arr_stream[4] < 170 and state == "down" and angles_arr_stream[2] > 160):
                         state = "up"
                         count += 1
+                        self.score +=100
                 return state, count
             mp_drawing = mp.solutions.drawing_utils
             mp_drawing_styles = mp.solutions.drawing_styles
@@ -276,8 +284,8 @@ class VideoCapture:
                         if old_excercise_counter != self.exercise_counter:
                             cv2.rectangle(frame, (0, 0), (frame.shape[1],frame.shape[0]), color = (0,255,0), thickness = 15)
 
-                        """cv2.putText(frame, text="FPS: " + fps, org=(0, 30),
-                                    fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(0, 255, 0), thickness=1)"""
+                        cv2.putText(frame, text="Score: " + str(self.score), org=(0, 30),
+                                    fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(0, 255, 0), thickness=1)
                         cv2.putText(frame, text="Set: " + str(self.exercise_set), org=(
                             850, 30), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(255, 0, 0), thickness=1)
                         cv2.putText(frame, text="Rep: " + str(self.exercise_counter), org=(

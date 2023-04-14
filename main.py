@@ -13,6 +13,7 @@ from PIL import Image, ImageTk
 import pandas as pd
 import textwrap3
 from playsound import playsound
+import json
 
 DEBUG = True
 TEST = True
@@ -217,6 +218,28 @@ def save_user_data():
     write_data(app.filepath, "Voice_Total " + str(app.total_voice_commands))
     write_data(app.filepath, "Mouse_Total " + str(app.total_click_commands))
 
+def get_score_load_scoreboard(self):
+    data_exercise = self.stream_widgets[0].vid.get_data()
+    final_score = data_exercise[4]
+    exercise = data_exercise[5]
+    scoreboard_directory = "data/leaderboard_data.txt"
+
+    if not os.path.isfile(scoreboard_directory):
+        with open(scoreboard_directory, "w") as template_file:
+            template_file.write(json.dumps({"bicep_curls": [0] * 10, "squats": [0] * 10, "lunges": [0] * 10, "jumping_jacks": [0] * 10}))
+    else:
+        with open(scoreboard_directory, "r+") as template_file:
+            score_dict = json.loads(template_file.readline())
+            for index, score in enumerate(score_dict[exercise]):
+                if final_score >= score:
+                    score_dict[exercise].insert(index, final_score)
+                    score_dict[exercise] = score_dict[exercise][0:10]
+                    break
+            template_file.seek(0)
+            template_file.write(json.dumps(score_dict))
+    ScoreboardPage.update_leaderboard(self)
+    app.change_page_to_n(ScoreboardPage, "")
+
 
 class VFITApp(ThemedTk):
     current_page = ""
@@ -228,7 +251,7 @@ class VFITApp(ThemedTk):
     prev_state = "None"
     prev_counter = 0
     prev_feedback = "None"
-    dummy_var = [None, 0, None, 1]
+    dummy_var = [None, 0, None, 1, 0]
 
     exercise_start_time = None
     src_filepath = None
@@ -247,7 +270,7 @@ class VFITApp(ThemedTk):
         return
 
     def gamification_data(self, data):
-        if data != app.dummy_var:
+        if data[0:5] != app.dummy_var:
             if data[1] != app.prev_counter:
                 sound_process = threading.Thread(target = self.play_sound())
                 sound_process.start()
@@ -489,12 +512,24 @@ class ScoreboardPage(tk.Frame):
         back_btn.image = back_btn_image
         back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
-        voice_commands_list = tk.Label(self, text="VOICE COMMANDS")
+        voice_commands_list = tk.Label(self, text="Exercise High Scores")
         voice_commands_list.config(
             font=("Helvetica", 24), bd=0, bg="white", activebackground='white', foreground="#223063")
         voice_commands_list.place(relx=0.5, rely=0.05, anchor="center")
 
-        df = pd.read_excel("excelfiles/commands.xlsx")
+        scoreboard_directory = "data/leaderboard_data.txt"
+        with open(scoreboard_directory, "r+") as template_file:
+            score_dict = json.loads(template_file.readline())
+
+        temp_data = []
+        for index, value in enumerate(score_dict["bicep_curls"]):
+            temp_arr = []
+            for key in list(score_dict.keys()): 
+                temp_arr.append(str(score_dict[key][index]))
+            temp_data.append([str(index +1)] + temp_arr)
+            #print([index + 1] + score_dict[key][index] for key in list(score_dict.keys()))
+            #temp_data.append([index + 1] + score_dict[key][index] for key in score_dict.keys()) 
+        df_score = pd.DataFrame(temp_data, columns=['Position', "Bicep Curls", "Squats", "Lunges", "Jumping Jacks"])
 
         tree = ttk.Treeview(self)
         tree['show'] = 'headings'
@@ -504,12 +539,12 @@ class ScoreboardPage(tk.Frame):
         style.configure("Treeview",
                         font=("Helvetica", 16),
                         rowheight=64,
-                        background="black",
+                        background="#223063",
                         foreground="white",
-                        fieldbackground="black")
+                        fieldbackground="#223063")
 
         style.map("Treeview", background=[('selected', 'grey')])
-        tree["columns"] = list(df.columns)
+        tree["columns"] = list(df_score.columns)
 
         style.configure('Treeview.Heading',
                         background="white",
@@ -518,12 +553,12 @@ class ScoreboardPage(tk.Frame):
                         rowheight=64,
                         fieldbackground="white")
         # Add column headings
-        for col in df.columns:
+        for col in df_score.columns:  
             tree.heading(col, text=col)
             tree.column(col, anchor='center')
 
         # Add rows to the table
-        for i, row in df.iterrows():
+        for i, row in df_score.iterrows():
             temp_arr = []
             for line in row:
                 temp_arr.append(wrap(line, 32))
@@ -546,7 +581,7 @@ class ScoreboardPage(tk.Frame):
         tree.place(relx=0.5, rely=0.5,
                    relheight=(1 - (self.winfo_screenheight() // 5) / self.winfo_screenheight()),
                    relwidth=1 - ((self.winfo_screenwidth() // 5) / self.winfo_screenwidth() * 9 / 16), anchor="center")
-        
+
         exit_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/exit_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         exit_btn = tk.Button(self, image=exit_btn_image,
@@ -555,6 +590,73 @@ class ScoreboardPage(tk.Frame):
         exit_btn.image = exit_btn_image
         exit_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
+        
+    def update_leaderboard(self):
+        
+        scoreboard_directory = "data/leaderboard_data.txt"
+        with open(scoreboard_directory, "r+") as template_file:
+            score_dict = json.loads(template_file.readline())
+
+        temp_data = []
+        for index, value in enumerate(score_dict["bicep_curls"]):
+            temp_arr = []
+            for key in list(score_dict.keys()): 
+                temp_arr.append(str(score_dict[key][index]))
+            temp_data.append([str(index +1)] + temp_arr)
+            #print([index + 1] + score_dict[key][index] for key in list(score_dict.keys()))
+            #temp_data.append([index + 1] + score_dict[key][index] for key in score_dict.keys()) 
+        df_score = pd.DataFrame(temp_data, columns=['Position', "Bicep Curls", "Squats", "Lunges", "Jumping Jacks"])
+
+        tree = ttk.Treeview(self)
+        tree['show'] = 'headings'
+        style = ttk.Style()
+        style.theme_use("default")
+
+        style.configure("Treeview",
+                        font=("Helvetica", 16),
+                        rowheight=64,
+                        background="#223063",
+                        foreground="white",
+                        fieldbackground="#223063")
+
+        style.map("Treeview", background=[('selected', 'grey')])
+        tree["columns"] = list(df_score.columns)
+
+        style.configure('Treeview.Heading',
+                        background="white",
+                        foreground="#223063",
+                        font=("Helvetica", 16),
+                        rowheight=64,
+                        fieldbackground="white")
+        # Add column headings
+        for col in df_score.columns:
+            tree.heading(col, text=col)
+            tree.column(col, anchor='center')
+
+        # Add rows to the table
+        for i, row in df_score.iterrows():
+            temp_arr = []
+            for line in row:
+                temp_arr.append(wrap(line, 32))
+            tree.insert("", "end", values=temp_arr, tags=(
+                'oddrow',) if i % 2 == 0 else ('evenrow',))
+
+        tree_scroll = ttk.Scrollbar(
+            tree, orient="vertical", command=tree.yview)
+        tree_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        style.configure("Vertical.TScrollbar",
+                        background="#6279CA",
+                        fieldbackground="#6279CA",
+                        arrowcolor="white",
+                        troughcolor="#223063",
+                        )
+
+        tree.configure(yscrollcommand=tree_scroll.set)
+        tree.tag_configure('oddrow', background='#223063')
+        tree.tag_configure('evenrow', background='#314792')
+        tree.place(relx=0.5, rely=0.5,
+                   relheight=(1 - (self.winfo_screenheight() // 5) / self.winfo_screenheight()),
+                   relwidth=1 - ((self.winfo_screenwidth() // 5) / self.winfo_screenwidth() * 9 / 16), anchor="center")
 
 class SetupPage(tk.Frame):
     name = "Setup"
@@ -796,7 +898,7 @@ class VideoPage(tk.Frame):
             scoreboard_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/scoreboard_btn.png").convert(mode="RGBA").resize(
                 (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
             scoreboard_btn = tk.Button(self, image=scoreboard_btn_image,
-                                command=lambda: [app.change_page_to_n(ScoreboardPage, ""), increment_click_total()],
+                                command=lambda: [get_score_load_scoreboard(self), increment_click_total()],
                                 font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
             scoreboard_btn.image = scoreboard_btn_image
             scoreboard_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
