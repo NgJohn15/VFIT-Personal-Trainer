@@ -454,7 +454,7 @@ class HelpPage(tk.Frame):
         back_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         back_btn = tk.Button(self, image=back_btn_image,
-                             command=lambda: [app.change_page_to_n(SetupPage, ""), increment_click_total()],
+                             command=lambda: app.change_page_to_n(SetupPage, ""),
                              highlightthickness=0, bd=0, bg="white", activebackground='white')
         back_btn.image = back_btn_image
         back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
@@ -776,10 +776,9 @@ class SetupPage(tk.Frame):
             (self.winfo_screenheight() // 10, self.winfo_screenheight() // 10)))
         tutorial_btn = tk.Button(self, text="Click here for a tutorial! \n or \n Say 'Click on tutorial button'",
                                  image=tutorial_image, compound='top',
-                                 command=lambda: [app.change_page_to_n(TutorialPage,
-                                                                       "Let's start with the tutorial. Click the "
-                                                                       "button."),
-                                                  increment_click_total()], font=("Helvetica", 16),
+                                 command=lambda: app.change_page_to_n(TutorialPage,
+                                                                      "Let's start with the tutorial. Click the button."),
+                                 font=("Helvetica", 16),
                                  highlightthickness=0, bd=0,
                                  bg="white", activebackground='white', foreground="#223063")
         tutorial_btn.image = tutorial_image
@@ -794,6 +793,8 @@ class SetupPage(tk.Frame):
         next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
 
+        # Tutorial Page
+
 
 class TutorialPage(tk.Frame):
     name = "Tutorial"
@@ -806,7 +807,7 @@ class TutorialPage(tk.Frame):
         back_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         back_btn = tk.Button(self, image=back_btn_image,
-                             command=lambda: [app.change_page_to_n(SetupPage, ""), increment_click_total()],
+                             command=lambda: app.change_page_to_n(SetupPage, ""),
                              font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
         back_btn.image = back_btn_image
         back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
@@ -820,11 +821,11 @@ class TutorialPage(tk.Frame):
         test_image = ImageTk.PhotoImage(Image.open("ui_elements/test_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 5, self.winfo_screenheight() // 5)))
         test_btn = tk.Button(self, text="Test button!", image=test_image, compound='top',
-                             command=lambda: [app.change_page_to_n(TutorialPage1,
-                                                                   "Nice job! You clicked the button! Now you can "
-                                                                   "either test the microphone or use voice to go "
-                                                                   "back and next by saying, go back or go next"),
-                                              increment_click_total()], font=("Helvetica", 16),
+                             command=lambda: app.change_page_to_n(TutorialPage1,
+                                                                  "Nice job! You clicked the button! Now you can "
+                                                                  "either test the microphone or use voice to go "
+                                                                  "back and next by saying, go back or go next"),
+                             font=("Helvetica", 16),
                              highlightthickness=0, bd=0,
                              bg="white", activebackground='white', foreground="#223063")
         test_btn.image = test_image
@@ -833,10 +834,9 @@ class TutorialPage(tk.Frame):
         next_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/next_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         next_btn = tk.Button(self, image=next_btn_image,
-                             command=lambda: [app.change_page_to_n(TutorialPage1,
-                                                                   "Now you can either test the microphone or use "
-                                                                   "voice to go back and next"),
-                                              increment_click_total()],
+                             command=lambda: app.change_page_to_n(TutorialPage1,
+                                                                  "Now you can either test the microphone or use "
+                                                                  "voice to go back and next"),
                              font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
         next_btn.image = next_btn_image
         next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
@@ -854,7 +854,7 @@ class TutorialPage1(tk.Frame):
         back_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         back_btn = tk.Button(self, image=back_btn_image,
-                             command=lambda: [app.change_page_to_n(TutorialPage, ""), increment_click_total()],
+                             command=lambda: app.change_page_to_n(TutorialPage, ""),
                              font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
         back_btn.image = back_btn_image
         back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
@@ -863,7 +863,7 @@ class TutorialPage1(tk.Frame):
         mic_image = ImageTk.PhotoImage(Image.open("ui_elements/mic_test.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 5, self.winfo_screenheight() // 5)))
         mic_rec_btn = tk.Button(self, text="Test Microphone!", image=mic_image, compound='top',
-                                command=lambda: [(self.mic_test(), ""), increment_click_total()],
+                                command=lambda: (self.mic_test(), ""),
                                 font=("Helvetica", 16),
                                 highlightthickness=0, bd=0,
                                 bg="white", activebackground='white', foreground="#223063")
@@ -873,8 +873,7 @@ class TutorialPage1(tk.Frame):
         next_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/next_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         next_btn = tk.Button(self, image=next_btn_image,
-                             command=lambda: [app.change_page_to_n(TutorialPage2, "Are you ready to get Fit?!"),
-                                              increment_click_total()],
+                             command=lambda: app.change_page_to_n(TutorialPage2, "Are you ready to get Fit?!"),
                              font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
         next_btn.image = next_btn_image
         next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
@@ -900,7 +899,7 @@ class TutorialPage2(tk.Frame):
         back_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/back_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         back_btn = tk.Button(self, image=back_btn_image,
-                             command=lambda: [app.change_page_to_n(TutorialPage1, ""), increment_click_total()],
+                             command=lambda: app.change_page_to_n(TutorialPage1, ""),
                              font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
         back_btn.image = back_btn_image
         back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
@@ -909,7 +908,7 @@ class TutorialPage2(tk.Frame):
         ready_image = ImageTk.PhotoImage(Image.open("ui_elements/start_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 5, self.winfo_screenheight() // 5)))
         ready_btn = tk.Button(self, text="I'm Ready!", image=ready_image, compound='top',
-                              command=lambda: [app.change_page_to_n(ExercisePage, ""), increment_click_total()],
+                              command=lambda: app.change_page_to_n(ExercisePage, ""),
                               font=("Helvetica", 16),
                               highlightthickness=0, bd=0,
                               bg="white", activebackground='white', foreground="#223063")
@@ -919,7 +918,7 @@ class TutorialPage2(tk.Frame):
         next_btn_image = ImageTk.PhotoImage(Image.open("ui_elements/next_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         next_btn = tk.Button(self, image=next_btn_image,
-                             command=lambda: [app.change_page_to_n(ExercisePage, ""), increment_click_total()],
+                             command=lambda: app.change_page_to_n(ExercisePage, ""),
                              font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
         next_btn.image = next_btn_image
         next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
