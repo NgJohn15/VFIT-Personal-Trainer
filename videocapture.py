@@ -12,6 +12,7 @@ import numpy as np
 import keyboard
 import os
 import math
+from playsound import playsound
 
 
 """TODO: add docstring"""
@@ -241,18 +242,20 @@ class VideoCapture:
                             frame = frame[:, 480:1440]
                             old_excercise_counter = self.exercise_counter
                             if self.exercise_type == "bicep_curls":
-                                if (joints[13].visibility > 0.9 and joints[14].visibility > 0.9):
+                                if (joints[13].visibility > 0.5 and joints[14].visibility > 0.5):
                                     '''print_text(
                                         "Please turn to one of your sides!", frame)'''
                                     self.feedback = "Please turn to one of your sides!"
-                                self.exercise_state, self.exercise_counter = bicep_curls(
+                                else:
+                                    self.exercise_state, self.exercise_counter = bicep_curls(
                                     joints, angles_arr, self.exercise_state, self.exercise_counter)
                             elif self.exercise_type == "squats":
-                                if (joints[26].visibility > 0.9 and joints[25].visibility > 0.9):
+                                if (joints[26].visibility > 0.5 and joints[25].visibility > 0.5):
                                     '''print_text(
                                         "Please turn to one of your sides!", frame)'''
                                     self.feedback = "Please turn to one of your sides!"
-                                self.exercise_state, self.exercise_counter = squats(
+                                else:
+                                    self.exercise_state, self.exercise_counter = squats(
                                     joints, angles_arr, self.exercise_state, self.exercise_counter)
                             elif self.exercise_type == "lunges":
                                 self.exercise_state, self.exercise_counter = lunges(
@@ -279,9 +282,10 @@ class VideoCapture:
                         fps = str(fps)
                         if self.feedback != "None":
                             cv2.rectangle(frame, (0, 0), (frame.shape[1],frame.shape[0]), color = (0,0,255), thickness = 15)
-                            if self.feedback != self.previous_feedback and (self.feedback != "please stand in the center of the frame!" or self.feedback != "Please turn to one of your sides!"):
+                            if self.feedback != self.previous_feedback and (self.feedback != "please stand in the center of the frame!" and self.feedback != "Please turn to one of your sides!"):
                                 self.score -= 40
-                                self.previous_feedback = self.feedback
+                                playsound(os.path.dirname(__file__) + "/sounds/negative_sound.mp3", block = False)
+                        self.previous_feedback = self.feedback
 
                         self.get_data()
                         if old_excercise_counter != self.exercise_counter:
