@@ -159,12 +159,9 @@ def get_voice_command() -> None:
                 app.change_page_to_n(TutorialPage, "Let's start with the tutorial. Click the button.")
             elif 'test button' in query and app.current_page == "Tutorial":
                 app.change_page_to_n(TutorialPage1,
-                                     "Nice job! You clicked the button! Now you can either test the microphone or use "
-                                     "voice to go back and next by saying, go back or go next")
+                                     "Nice job! You clicked the button! Now you can try going back or next by saying, go back or go next")
             elif 'ready' in query and app.current_page == "Tutorial2":
                 app.change_page_to_n(ExercisePage, "Select or say an exercise to begin")
-            elif 'test microphone' in query and app.current_page == "Tutorial1":
-                TutorialPage1.mic_test("")
 
         # SETUP Page
         elif app.current_page == "Setup" and "ready" in query:
@@ -174,11 +171,7 @@ def get_voice_command() -> None:
         # Start Tutorial form SETUP page
         elif app.current_page == "Setup" and "tutorial" in query:
             app.total_voice_commands += 1
-            app.change_page_to_n(TutorialPage, "Let's start with the tutorial. Click the button.")        
-
-        # Microphone Tutorial
-        elif app.current_page == "Tutorial1" and "test microphone" in query:
-            TutorialPage1.mic_test("")
+            app.change_page_to_n(TutorialPage, "Let's start with the tutorial. Click the button.")  
 
         # Last page tutorial
         elif app.current_page == "Tutorial2" and "ready" in query:
@@ -753,7 +746,7 @@ class SetupPage(tk.Frame):
             orient='horizontal',
             command=play_sound)
 
-        volume_slider.set(0)
+        volume_slider.set(50)
         volume_slider.get()
         volume_slider.place(relx=.5, rely=.5, anchor='center',
                             relheight=(self.winfo_screenheight() // 30) / self.winfo_screenheight(), relwidth=0.4)
@@ -838,9 +831,7 @@ class TutorialPage(tk.Frame):
             (self.winfo_screenheight() // 5, self.winfo_screenheight() // 5)))
         test_btn = tk.Button(self, text="Test button!", image=test_image, compound='top',
                              command=lambda: app.change_page_to_n(TutorialPage1,
-                                                                  "Nice job! You clicked the button! Now you can "
-                                                                  "either test the microphone or use voice to go "
-                                                                  "back and next by saying, go back or go next"),
+                                                                  "Nice job! You clicked the button! Now you can try going back or next by saying, go back or go next"),
                              font=("Helvetica", 16),
                              highlightthickness=0, bd=0,
                              bg="white", activebackground='white', foreground="#223063")
@@ -851,8 +842,7 @@ class TutorialPage(tk.Frame):
             (self.winfo_screenheight() // 15, self.winfo_screenheight() // 15)))
         next_btn = tk.Button(self, image=next_btn_image,
                              command=lambda: app.change_page_to_n(TutorialPage1,
-                                                                  "Now you can either test the microphone or use "
-                                                                  "voice to go back and next"),
+                                                                  "Use voice to go back and next"),
                              font=("Helvetica", 10), highlightthickness=0, bd=0, bg="white", activebackground='white')
         next_btn.image = next_btn_image
         next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
@@ -876,14 +866,9 @@ class TutorialPage1(tk.Frame):
         back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
 
-        print_text = tk.Label(self, text="Try saying 'Test Microphone' or Clicking on the button")
-        print_text.config(
-            font=("Helvetica", 24), bd=0, bg="white", activebackground='white', foreground="#223063")
-        print_text.place(relx=0.5, rely=0.25, anchor="center")
-
         mic_image = ImageTk.PhotoImage(Image.open("ui_elements/mic_test.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 5, self.winfo_screenheight() // 5)))
-        mic_rec_btn = tk.Button(self, text="Test Microphone!", image=mic_image, compound='top',
+        mic_rec_btn = tk.Button(self, image=mic_image, compound='top',
                                 command=lambda: (self.mic_test(), ""),
                                 font=("Helvetica", 16),
                                 highlightthickness=0, bd=0,
@@ -899,15 +884,6 @@ class TutorialPage1(tk.Frame):
         next_btn.image = next_btn_image
         next_btn.place(relx=(1 - (self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
-
-    def mic_test(self):
-        """
-        Functional call for Mic Test Button, calls voice recognition function
-        :return: void
-        """
-        speak("Say something, and i'll repeat it back!")
-        speak("You said " + get_command())
-
 
 class TutorialPage2(tk.Frame):
     name = "Tutorial2"
