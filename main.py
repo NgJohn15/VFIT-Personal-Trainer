@@ -125,7 +125,7 @@ def get_voice_command() -> None:
             elif app.current_page == "Tutorial":
                 app.change_page_to_n(SetupPage, "Setup")
             elif app.current_page == "Tutorial1":
-                app.change_page_to_n(TutorialPage, "")
+                app.change_page_to_n(TutorialPage, "Good job! Now try saying go next.")
             elif app.current_page == "Tutorial2":
                 app.change_page_to_n(TutorialPage1, "")
 
@@ -145,7 +145,7 @@ def get_voice_command() -> None:
             elif app.current_page == "Video":
                 app.change_page_to_n(ScoreboardPage, "")
             elif app.current_page == "Tutorial":
-                app.change_page_to_n(TutorialPage1, "")
+                app.change_page_to_n(TutorialPage1, "Good job! Now you know how to use voice commands.")
             elif app.current_page == "Tutorial1":
                 app.change_page_to_n(TutorialPage2, "Are you ready to get Fit?!")
 
@@ -163,11 +163,26 @@ def get_voice_command() -> None:
                                      "voice to go back and next by saying, go back or go next")
             elif 'ready' in query and app.current_page == "Tutorial2":
                 app.change_page_to_n(ExercisePage, "Select or say an exercise to begin")
+            elif 'test microphone' in query and app.current_page == "Tutorial1":
+                TutorialPage1.mic_test("")
 
         # SETUP Page
         elif app.current_page == "Setup" and "ready" in query:
             app.total_voice_commands += 1
-            app.change_page_to_n(ExercisePage, "Pick an exercise to begin!")
+            app.change_page_to_n(ExercisePage, "Select or say an exercise to begin")
+
+        # Start Tutorial form SETUP page
+        elif app.current_page == "Setup" and "tutorial" in query:
+            app.total_voice_commands += 1
+            app.change_page_to_n(TutorialPage, "Let's start with the tutorial. Click the button.")        
+
+        # Microphone Tutorial
+        elif app.current_page == "Tutorial1" and "test microphone" in query:
+            TutorialPage1.mic_test("")
+
+        # Last page tutorial
+        elif app.current_page == "Tutorial2" and "ready" in query:
+            app.change_page_to_n(ExercisePage, "Select or say an exercise to begin")
 
         # WELCOME Page
         elif app.current_page == "Welcome" and "let's begin" in query:
@@ -204,7 +219,7 @@ def get_voice_command() -> None:
             pass
         # Inform user
         else:
-            threading.Thread(target=speak, args=("I didn't catch that. Please speak slowly and clearly.",)).start()
+            pass
 
 
 def clean_video():
@@ -245,20 +260,15 @@ def get_score_load_scoreboard(self):
     exercise = data_exercise[5]
     scoreboard_directory = "data/leaderboard_data.txt"
 
-    if not os.path.isfile(scoreboard_directory):
-        with open(scoreboard_directory, "w") as template_file:
-            template_file.write(json.dumps(
-                {"bicep_curls": [0] * 10, "squats": [0] * 10, "lunges": [0] * 10, "jumping_jacks": [0] * 10}))
-    else:
-        with open(scoreboard_directory, "r+") as template_file:
-            score_dict = json.loads(template_file.readline())
-            for index, score in enumerate(score_dict[exercise]):
-                if final_score >= score:
-                    score_dict[exercise].insert(index, final_score)
-                    score_dict[exercise] = score_dict[exercise][0:10]
-                    break
-            template_file.seek(0)
-            template_file.write(json.dumps(score_dict))
+    with open(scoreboard_directory, "r+") as template_file:
+        score_dict = json.loads(template_file.readline())
+        for index, score in enumerate(score_dict[exercise]):
+            if final_score >= score:
+                score_dict[exercise].insert(index, final_score)
+                score_dict[exercise] = score_dict[exercise][0:10]
+                break
+        template_file.seek(0)
+        template_file.write(json.dumps(score_dict))
     app.frames[ScoreboardPage].update_leaderboard()
     app.change_page_to_n(ScoreboardPage, "")
 
@@ -361,6 +371,14 @@ class VFITApp(ThemedTk):
         # initializing frames to an empty array
         self.frames = {}
 
+        scoreboard_directory = "data/leaderboard_data.txt"
+        # creates an empty Data folder should one not exist
+        os.makedirs(os.path.dirname("./data/"), exist_ok=True)
+        if not os.path.isfile(scoreboard_directory):
+            with open(scoreboard_directory, "w") as template_file:
+                template_file.write(json.dumps(
+                    {"bicep_curls": [0] * 10, "squats": [0] * 10, "lunges": [0] * 10, "jumping_jacks": [0] * 10}))
+
         welcome_frame = WelcomePage(container, self)
         introduction_frame = HelpPage(container, self)
         setup_frame = SetupPage(container, self)
@@ -441,6 +459,11 @@ class WelcomePage(tk.Frame):
         welcome_btn.image = welcome_image
         welcome_btn.place(relx=.5, rely=.5, anchor='center',
                           relheight=1, relwidth=1)
+        
+        welcome_heading = tk.Label(self, text="Click Anywhere or Say 'Lets begin!' to start.")
+        welcome_heading.config(
+            font=("Helvetica", 24), bd=0, bg="white", activebackground='white', foreground="#223063")
+        welcome_heading.place(relx=0.5, rely=0.8, anchor="center")
 
 
 class HelpPage(tk.Frame):
@@ -534,19 +557,12 @@ class ScoreboardPage(tk.Frame):
         back_btn.image = back_btn_image
         back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
-        voice_commands_list = tk.Label(self, text="Exercise High Scores")
-        voice_commands_list.config(
+        scoreboard_heading = tk.Label(self, text="Exercise High Scores")
+        scoreboard_heading.config(
             font=("Helvetica", 24), bd=0, bg="white", activebackground='white', foreground="#223063")
-        voice_commands_list.place(relx=0.5, rely=0.05, anchor="center")
+        scoreboard_heading.place(relx=0.5, rely=0.05, anchor="center")
 
         scoreboard_directory = "data/leaderboard_data.txt"
-
-        # creates an empty Data folder should one not exist
-        os.makedirs(os.path.dirname("./data/"), exist_ok=True)
-        if not os.path.isfile(scoreboard_directory):
-            with open(scoreboard_directory, "w") as template_file:
-                template_file.write(json.dumps(
-                    {"bicep_curls": [0] * 10, "squats": [0] * 10, "lunges": [0] * 10, "jumping_jacks": [0] * 10}))
 
         with open(scoreboard_directory, "r+") as template_file:
             score_dict = json.loads(template_file.readline())
@@ -774,7 +790,7 @@ class SetupPage(tk.Frame):
 
         tutorial_image = ImageTk.PhotoImage(Image.open("ui_elements/tutorial_btn.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 10, self.winfo_screenheight() // 10)))
-        tutorial_btn = tk.Button(self, text="Click here for a tutorial! \n or \n Say 'Click on tutorial button'",
+        tutorial_btn = tk.Button(self, text="Click here for a tutorial! \n or \n Say 'Start Tutorial'",
                                  image=tutorial_image, compound='top',
                                  command=lambda: app.change_page_to_n(TutorialPage,
                                                                       "Let's start with the tutorial. Click the button."),
@@ -860,6 +876,11 @@ class TutorialPage1(tk.Frame):
         back_btn.place(relx=((self.winfo_screenwidth() // 20) / self.winfo_screenwidth() * 9 / 16),
                        rely=(1 - (self.winfo_screenheight() // 20) / self.winfo_screenheight()), anchor='center')
 
+        print_text = tk.Label(self, text="Try saying 'Test Microphone' or Clicking on the button")
+        print_text.config(
+            font=("Helvetica", 24), bd=0, bg="white", activebackground='white', foreground="#223063")
+        print_text.place(relx=0.5, rely=0.25, anchor="center")
+
         mic_image = ImageTk.PhotoImage(Image.open("ui_elements/mic_test.png").convert(mode="RGBA").resize(
             (self.winfo_screenheight() // 5, self.winfo_screenheight() // 5)))
         mic_rec_btn = tk.Button(self, text="Test Microphone!", image=mic_image, compound='top',
@@ -884,7 +905,7 @@ class TutorialPage1(tk.Frame):
         Functional call for Mic Test Button, calls voice recognition function
         :return: void
         """
-        speak("Listening")
+        speak("Say something, and i'll repeat it back!")
         speak("You said " + get_command())
 
 
