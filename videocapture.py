@@ -102,22 +102,22 @@ class VideoCapture:
 
             def bicep_curls(joint_arr, angles_arr_stream, state, count):
                 if (joint_arr[14].visibility >= 0.9):
-                    if angles_arr_stream[0] > 160 and angles_arr_stream[2] < 10:
+                    if angles_arr_stream[0] > 160 and angles_arr_stream[2] < 15:
                         state = "down"
-                    elif angles_arr_stream[0] < 45 and state == "down" and angles_arr_stream[2] < 10:
+                    elif angles_arr_stream[0] < 45 and state == "down" and angles_arr_stream[2] < 15:
                         state = "up"
                         count += 1
                         self.score +=100
-                    elif angles_arr_stream[2] > 10:
+                    elif angles_arr_stream[2] > 15:
                         self.feedback = "Keep your upper arm stationary and your elbow close to your body!"
                 elif (joint_arr[13].visibility >= 0.9):
                     if angles_arr_stream[1] > 160 and angles_arr_stream[3] < 10:
                         state = "down"
-                    elif angles_arr_stream[1] < 45 and state == "down" and angles_arr_stream[3] < 10:
+                    elif angles_arr_stream[1] < 45 and state == "down" and angles_arr_stream[3] < 15:
                         state = "up"
                         count += 1
                         self.score +=100
-                    elif angles_arr_stream[3] > 10:
+                    elif angles_arr_stream[3] > 15:
                         self.feedback = "Keep your upper arm stationary and your elbow close to your body!"
                 return state, count
 
@@ -129,9 +129,9 @@ class VideoCapture:
                         state = "down"
                         count += 1
                         self.score +=100
-                    elif (angles_arr_stream[2] < 60 or angles_arr_stream[2] > 120):
+                    elif ((angles_arr_stream[2] < 40 and angles_arr_stream[3] < 40 ) or (angles_arr_stream[2] > 140 and angles_arr_stream[2] > 140)):
                         self.feedback = "Keep your arms extended, perpendicular to your body!"
-                    elif (angles_arr_stream[6] < 100 and state == "up" and (angles_arr_stream[4] > 160 or angles_arr_stream[4] < 50)):
+                    elif (angles_arr_stream[6] < 100 and state == "up" and (angles_arr_stream[4] > 170 or angles_arr_stream[4] < 30)):
                         self.feedback = "Keep an eye on your lower back posture! Bend your torso like in the reference video"
 
                 elif (joint_arr[25].visibility >= 0.9):
@@ -141,9 +141,9 @@ class VideoCapture:
                         state = "down"
                         count += 1
                         self.score +=100
-                    elif (angles_arr_stream[3] < 60 or angles_arr_stream[3] > 120):
+                    elif ((angles_arr_stream[2] < 40 and angles_arr_stream[3] < 40 ) or (angles_arr_stream[2] > 140 and angles_arr_stream[2] > 140)):
                         self.feedback = "Keep your arms extended, perpendicular to your body!"
-                    elif (angles_arr_stream[7] < 100 and state == "up" and (angles_arr_stream[5] > 160 or angles_arr_stream[5] < 50)):
+                    elif (angles_arr_stream[7] < 100 and state == "up" and (angles_arr_stream[5] > 170 or angles_arr_stream[5] < 30)):
                         self.feedback = "Keep an eye on your lower back posture! Bend your torso like in the reference video"
                 return state, count
 
@@ -151,20 +151,20 @@ class VideoCapture:
                 if (joint_arr[26].visibility >= 0.9):
                     if ((angles_arr_stream[6] > 160 and angles_arr_stream[7] > 160) and angles_arr_stream[2] < 15 and angles_arr_stream[4] > 160):
                         state = "up"
-                    elif ((angles_arr_stream[6] < 100 and angles_arr_stream[7] < 100) and state == "up" and angles_arr_stream[2] < 15 and angles_arr_stream[4] > 160):
+                    elif ((angles_arr_stream[6] < 110 and angles_arr_stream[7] < 110) and state == "up" and angles_arr_stream[2] < 15 and angles_arr_stream[4] > 160):
                         state = "down"
                         count += 1
                         self.score +=100
-                    elif ((angles_arr_stream[6] < 140 and angles_arr_stream[6] > 100) or (angles_arr_stream[7] < 140 and angles_arr_stream[7] > 100)):
+                    elif ((angles_arr_stream[6] < 140 and angles_arr_stream[6] > 110) or (angles_arr_stream[7] < 140 and angles_arr_stream[7] > 110)):
                         self.feedback = "Go down deeper!"
                 elif (joint_arr[25].visibility >= 0.9):
                     if ((angles_arr_stream[6] > 160 and angles_arr_stream[7] > 160) and angles_arr_stream[3] < 15 and angles_arr_stream[5] > 160):
                         state = "up"
-                    elif ((angles_arr_stream[6] < 100 and angles_arr_stream[7] < 100) and state == "up" and angles_arr_stream[3] < 15 and angles_arr_stream[5] > 160):
+                    elif ((angles_arr_stream[6] < 110 and angles_arr_stream[7] < 110) and state == "up" and angles_arr_stream[3] < 15 and angles_arr_stream[5] > 160):
                         state = "down"
                         count += 1
                         self.score +=100
-                    elif ((angles_arr_stream[6] < 140 and angles_arr_stream[6] > 100) or (angles_arr_stream[7] < 140 and angles_arr_stream[7] > 100)):
+                    elif ((angles_arr_stream[6] < 140 and angles_arr_stream[6] > 110) or (angles_arr_stream[7] < 140 and angles_arr_stream[7] > 110)):
                         self.feedback = "Go down deeper!"
                 return state, count
 
@@ -242,7 +242,7 @@ class VideoCapture:
                             frame = frame[:, 480:1440]
                             old_excercise_counter = self.exercise_counter
                             if self.exercise_type == "bicep_curls":
-                                if (joints[13].visibility > 0.5 and joints[14].visibility > 0.5):
+                                if (joints[13].visibility > 0.8 and joints[14].visibility > 0.8):
                                     '''print_text(
                                         "Please turn to one of your sides!", frame)'''
                                     self.feedback = "Please turn to one of your sides!"
@@ -250,7 +250,7 @@ class VideoCapture:
                                     self.exercise_state, self.exercise_counter = bicep_curls(
                                     joints, angles_arr, self.exercise_state, self.exercise_counter)
                             elif self.exercise_type == "squats":
-                                if (joints[26].visibility > 0.5 and joints[25].visibility > 0.5):
+                                if (joints[26].visibility > 0.8 and joints[25].visibility > 0.8):
                                     '''print_text(
                                         "Please turn to one of your sides!", frame)'''
                                     self.feedback = "Please turn to one of your sides!"
@@ -280,7 +280,7 @@ class VideoCapture:
                         # converting the fps to string so that we can display it on frame
                         # by using putText function
                         fps = str(fps)
-                        if self.feedback != "None":
+                        if self.feedback != "None" and self.feedback != "Go down deeper!":
                             cv2.rectangle(frame, (0, 0), (frame.shape[1],frame.shape[0]), color = (0,0,255), thickness = 15)
                             if self.feedback != self.previous_feedback and (self.feedback != "please stand in the center of the frame!" and self.feedback != "Please turn to one of your sides!"):
                                 self.score -= 40
